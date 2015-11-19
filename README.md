@@ -33,7 +33,7 @@ Iamport.payments(status: "paid", page: 2)
 Add this line to your application's Gemfile:
 
 ```ruby
-gem 'iamport'
+gem 'iamport', github: 'iamport/iamport-rest-client-ruby'
 ```
 
 And then execute:
