@@ -1,7 +1,7 @@
 require "iamport/version"
 
 module Iamport
-  IAMPORT_HOST = "api.iamport.kr:443"
+  IAMPORT_HOST = "https://api.iamport.kr"
 
   class Config
     attr_accessor :api_key
@@ -18,13 +18,19 @@ module Iamport
     end
 
     def token
-      url = "https://#{IAMPORT_HOST}/users/getToken"
-      result = HTTParty.post url, body: { imp_key: config.api_key, imp_secret: config.api_secret }
+      url = "#{IAMPORT_HOST}/users/getToken"
+      body = {
+        imp_key: config.api_key,
+        imp_secret: config.api_secret
+      }
+
+      result = HTTParty.post url, body: body
       result["response"]["access_token"]
     end
 
     def payment(imp_uid)
-      url = "https://#{IAMPORT_HOST}/payments/#{imp_uid}?_token=#{token}"
+      url = "#{IAMPORT_HOST}/payments/#{imp_uid}?_token=#{token}"
+
       result = HTTParty.post url
       result["response"]
     end
@@ -33,14 +39,17 @@ module Iamport
       status = options[:status] || "all"
       page = options[:page] || 1
 
-      url = "https://#{IAMPORT_HOST}/payments/status/#{status}?_token=#{token}&page=#{page}"
+      url = "#{IAMPORT_HOST}/payments/status/#{status}?_token=#{token}&page=#{page}"
+
       result = HTTParty.post url
       result["response"]
     end
 
     def cancel(imp_uid)
-      url = "https://#{IAMPORT_HOS}/payments/cancel?_token=#{token}"
-      result = HTTParty.post url, body: { imp_uid: imp_uid }
+      url = "#{IAMPORT_HOS}/payments/cancel?_token=#{token}"
+      body = { imp_uid: imp_uid }
+
+      result = HTTParty.post url, body: body
       result["response"]
     end
 
