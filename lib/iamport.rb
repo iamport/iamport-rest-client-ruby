@@ -45,20 +45,8 @@ module Iamport
       result["response"]
     end
 
-    def cancel(imp_uid)
-      url = "#{IAMPORT_HOS}/payments/cancel?_token=#{token}"
-      body = { imp_uid: imp_uid }
-
-      result = HTTParty.post url, body: body
-      result["response"]
-    end
-
-    def cancel_item(imp_uid, amount)
-      url = "https://#{IAMPORT_HOS}/payments/cancel?_token=#{token}"
-      body = {
-        imp_uid: imp_uid,
-        amount: amount
-      }
+    def cancel(body)
+      url = "#{IAMPORT_HOST}/payments/cancel?_token=#{token}"
 
       result = HTTParty.post url, body: body
       result["response"]
