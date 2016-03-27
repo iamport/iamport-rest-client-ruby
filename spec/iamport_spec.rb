@@ -28,7 +28,7 @@ describe Iamport do
 
   describe ".token" do
     it "generates and returns new token" do
-      expected_url = "https://api.iamport.kr:443/users/getToken"
+      expected_url = "https://api.iamport.kr/users/getToken"
       expected_params = {
         body: {
          imp_key: "API_KEY",
@@ -84,7 +84,7 @@ describe Iamport do
     it "returns payment info" do
       allow(Iamport).to receive(:token).and_return("NEW_TOKEN")
 
-      expected_url = "https://api.iamport.kr:443/payments/IMP_UID?_token=NEW_TOKEN"
+      expected_url = "https://api.iamport.kr/payments/IMP_UID?_token=NEW_TOKEN"
       response = {
         "response" => payment_json,
       }
@@ -94,10 +94,11 @@ describe Iamport do
       expect(res["imp_uid"]).to eq("IMP_UID")
     end
   end
+
   describe "payments" do
     it "returns payment list" do
       allow(Iamport).to receive(:token).and_return("NEW_TOKEN")
-      expected_url = "https://api.iamport.kr:443/payments/status/all?_token=NEW_TOKEN&page=1"
+      expected_url = "https://api.iamport.kr/payments/status/all?_token=NEW_TOKEN&page=1"
       response = {
         "response" => {
           "total" => 150,
@@ -114,6 +115,33 @@ describe Iamport do
       res = Iamport.payments
       expect(res["total"]).to eq(150)
       expect(res["list"].size).to eq(2)
+    end
+  end
+
+  describe 'cancel' do
+    it 'returns cancel info' do
+      allow(Iamport).to receive(:token).and_return('NEW_TOKEN')
+
+      expected_url = 'https://api.iamport.kr/payments/cancel?_token=NEW_TOKEN'
+      expected_params = {
+        body: {
+          imp_uid: 'IMP_UID'
+        }
+      }
+      response = {
+        code: 0,
+        message: '',
+        response: {
+          imp_id: 'IMP_UID'
+        }
+      }
+
+      expect(HTTParty).to receive(:post).with(expected_url, expected_params).and_return(response)
+
+      body = { imp_uid: 'IMP_UID' }
+      res = Iamport.cancel(body)
+      expect(res[:code]).to eq(0)
+      expect(res[:message]).to eq('')
     end
   end
 end

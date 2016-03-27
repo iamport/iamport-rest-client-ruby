@@ -49,7 +49,7 @@ module Iamport
       url = "#{IAMPORT_HOST}/payments/cancel?_token=#{token}"
 
       result = HTTParty.post url, body: body
-      result["response"]
+      result
     end
   end
 end
