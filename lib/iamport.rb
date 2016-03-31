@@ -1,8 +1,6 @@
 require "iamport/version"
 
 module Iamport
-  IAMPORT_HOST = "https://api.iamport.kr"
-
   class Config
     attr_accessor :api_key
     attr_accessor :api_secret
@@ -46,10 +44,41 @@ module Iamport
     end
 
     def cancel(body)
-      url = "#{IAMPORT_HOST}/payments/cancel?_token=#{token}"
+      url = '/payments/cancel'
 
-      result = HTTParty.post url, body: body
+      result = pay_post(url, body)
       result
+    end
+
+    private
+
+    $iamport_host = 'https://api.iamport.kr'
+
+    def get_headers
+      { Authorization: token }
+    end
+
+    def pay_get(uri, payload = {})
+      url = $iamport_host + uri
+
+      response = HTTParty.post url, headers: get_headers, body: payload
+      get_response(response)
+    end
+
+    def pay_post(uri, payload = {})
+      url = $iamport_host + uri
+
+      response = HTTParty.post url, headers: get_headers, body: payload
+      get_response(response)
+    end
+
+    def get_response(response)
+      if response['code'] != 0
+        result = { code: response['code'], message: response['message'] }
+        return result
+      end
+
+      response['response']
     end
   end
 end
