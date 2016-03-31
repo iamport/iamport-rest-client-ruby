@@ -105,9 +105,16 @@ describe Iamport do
   describe 'payments' do
     it '  returns payment list' do
       allow(Iamport).to receive(:token).and_return('NEW_TOKEN')
-      expected_url = '/payments/status/all?page=1'
+
+      expected_url = $iamport_host + '/payments/status/all?page=1'
+      expected_params = {
+        headers: {
+          Authorization: 'NEW_TOKEN'
+        },
+        body: {}
+      }
       response = {
-          response: {
+        response: {
           total: 150,
           previous: false,
           next: 2,
@@ -117,11 +124,11 @@ describe Iamport do
           ]
         }
       }
-      expect(HTTParty).to receive(:post).with(expected_url).and_return(response)
+      expect(HTTParty).to receive(:get).with(expected_url, expected_params).and_return(response)
 
       res = Iamport.payments
-      expect(res["total"]).to eq 150
-      expect(res["list"].size).to eq 2
+      expect(res[:total]).to eq 150
+      expect(res[:list].size).to eq 2
     end
   end
 

@@ -34,13 +34,13 @@ module Iamport
     end
 
     def payments(options = {})
-      status = options[:status] || "all"
+      status = options[:status] || 'all'
       page = options[:page] || 1
 
-      url = "#{IAMPORT_HOST}/payments/status/#{status}?_token=#{token}&page=#{page}"
+      url = "/payments/status/#{status}?page=#{page}"
 
-      result = HTTParty.post url
-      result["response"]
+      result = pay_get(url)
+      result
     end
 
     def cancel(body)
