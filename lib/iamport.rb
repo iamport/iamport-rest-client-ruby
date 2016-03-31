@@ -16,14 +16,14 @@ module Iamport
     end
 
     def token
-      url = "#{IAMPORT_HOST}/users/getToken"
+      url = $iamport_host + "/users/getToken"
       body = {
-        imp_key: config.api_key,
-        imp_secret: config.api_secret
+          imp_key: config.api_key,
+          imp_secret: config.api_secret
       }
 
       result = HTTParty.post url, body: body
-      result["response"]["access_token"]
+      result[:response][:access_token]
     end
 
     def payment(imp_uid)
