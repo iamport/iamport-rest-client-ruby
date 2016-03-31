@@ -136,26 +136,34 @@ describe Iamport do
     it 'returns cancel info' do
       allow(Iamport).to receive(:token).and_return 'NEW_TOKEN'
 
-      expected_url = '/payments/cancel'
+      expected_url = $iamport_host + '/payments/cancel'
       expected_params = {
+        headers: {
+          Authorization: 'NEW_TOKEN'
+        },
         body: {
-          imp_uid: 'IMP_UID'
+          imp_uid: 'IMP_UID',
+          merchant_uid: 'M00001'
         }
-      },
+      }
       response = {
         code: 0,
         message: '',
         response: {
-          imp_id: 'IMP_UID'
+          imp_uid: 'IMP_UID',
+          merchant_uid: 'M00001'
         }
       }
 
       expect(HTTParty).to receive(:post).with(expected_url, expected_params).and_return(response)
 
-      body = { imp_uid: 'IMP_UID' }
+      body = {
+        imp_uid: 'IMP_UID',
+        merchant_uid: 'M00001'
+      }
       res = Iamport.cancel(body)
-      expect(res[:code]).to eq 0
-      expect(res[:message]).to eq ''
+      expect(res[:imp_uid]).to eq 'IMP_UID'
+      expect(res[:merchant_uid]).to eq 'M00001'
     end
   end
 end
