@@ -27,10 +27,10 @@ module Iamport
     end
 
     def payment(imp_uid)
-      url = "#{IAMPORT_HOST}/payments/#{imp_uid}?_token=#{token}"
+      url = "/payments/#{imp_uid}"
 
-      result = HTTParty.post url
-      result["response"]
+      result = pay_get(url)
+      result
     end
 
     def payments(options = {})
@@ -61,24 +61,15 @@ module Iamport
     def pay_get(uri, payload = {})
       url = $iamport_host + uri
 
-      response = HTTParty.post url, headers: get_headers, body: payload
-      get_response(response)
+      response = HTTParty.get url, headers: get_headers, body: payload
+      response[:response]
     end
 
     def pay_post(uri, payload = {})
       url = $iamport_host + uri
 
       response = HTTParty.post url, headers: get_headers, body: payload
-      get_response(response)
-    end
-
-    def get_response(response)
-      if response['code'] != 0
-        result = { code: response['code'], message: response['message'] }
-        return result
-      end
-
-      response['response']
+      response[:response]
     end
   end
 end

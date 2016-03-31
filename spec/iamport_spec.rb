@@ -85,7 +85,7 @@ describe Iamport do
     it 'returns payment info' do
       allow(Iamport).to receive(:token).and_return('NEW_TOKEN')
 
-      expected_url = '/payments/IMP_UID'
+      expected_url = $iamport_host + '/payments/IMP_UID'
       expected_params = {
           headers: {
               Authorization: 'NEW_TOKEN'
@@ -93,12 +93,12 @@ describe Iamport do
           body: {}
       }
       response = {
-        response: payment_json,
+        response: payment_json
       }
       expect(HTTParty).to receive(:get).with(expected_url, expected_params).and_return(response)
 
       res = Iamport.payment('IMP_UID')
-      expect(res['response']['imp_uid']).to eq 'IMP_UID'
+      expect(res[:imp_uid]).to eq 'IMP_UID'
     end
   end
 
