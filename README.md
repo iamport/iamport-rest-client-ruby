@@ -28,6 +28,19 @@ Iamport.payments(status: "paid")
 Iamport.payments(status: "paid", page: 2)
 ```
 
+## payments Cancel API
+
+```
+body = {
+  imp_uid: 'imp_120405869',
+  merchant_uid: 'mid_0000001',
+  amount: ''
+}
+
+Iamport.cancel(body)
+```
+
+
 ## Installation
 
 Add this line to your application's Gemfile:
