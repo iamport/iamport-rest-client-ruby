@@ -18,8 +18,8 @@ module Iamport
     def token
       url = $iamport_host + "/users/getToken"
       body = {
-          imp_key: config.api_key,
-          imp_secret: config.api_secret
+          imp_key: Iamport.config.api_key,
+          imp_secret: Iamport.config.api_secret
       }
 
       result = HTTParty.post url, body: body
