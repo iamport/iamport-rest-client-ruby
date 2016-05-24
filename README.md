@@ -28,6 +28,17 @@ Iamport.payments(status: "paid")
 Iamport.payments(status: "paid", page: 2)
 ```
 
+## cancel API
+body의 값은 [API 문서 - cancel](https://api.iamport.kr/#!/payments/cancelPayment)에 있는 사용하는 것을 추가하여 진행하면 됩니다.​
+```
+body = {
+  imp_uid: "IMP_UID",
+  merchant_uid: "M00001",
+  amount: ""
+}
+Iamport.cancel(body)
+```
+
 ## Installation
 
 Add this line to your application's Gemfile:

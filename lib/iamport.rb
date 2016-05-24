@@ -52,6 +52,15 @@ module Iamport
       result
     end
 
+    # Canceled payments
+    # https://api.iamport.kr/#!/payments/cancelPayment
+    def cancel(body)
+      uri = "payments/cancel"
+
+      result = pay_post(uri, body)
+      result
+    end
+
     private
 
     # Get header data
