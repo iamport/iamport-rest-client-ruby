@@ -138,5 +138,39 @@ describe Iamport do
       expect(res["list"].size).to eq(2)
     end
   end
+
+  describe 'cancel' do
+    it 'return cancel info' do
+      allow(Iamport).to receive(:token).and_return 'NEW_TOKEN'
+
+      expected_url = "#{IAMPORT_HOST}/payments/cancel"
+      expected_params = {
+          headers: {
+              Authorization: "NEW_TOKEN"
+          },
+          body: {
+              imp_uid: "IMP_UID",
+              merchant_uid: "M00001"
+          }
+      }
+
+      response = {
+          "code" => 0,
+          "message" => '',
+          "response" => {
+              "imp_uid" => "IMP_UID",
+              "merchant_uid" => "M00001"
+          }
+      }
+
+      expect(HTTParty).to receive(:post).with(expected_url, expected_params).and_return(response)
+
+      body = expected_params[:body]
+
+      res = Iamport.cancel(body)
+      expect(res["imp_uid"]).to eq("IMP_UID")
+      expect(res["merchant_uid"]).to eq("M00001")
+    end
+  end
 end
 
