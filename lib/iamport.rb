@@ -52,6 +52,15 @@ module Iamport
       result
     end
 
+    # Find payment information using merchant uid
+    # https://api.iamport.kr/#!/payments/getPaymentByMerchantUid
+    def find(merchant_uid)
+      uri = "payments/find/#{merchant_uid}"
+
+      result = pay_get(uri)
+      result
+    end
+
     # Canceled payments
     # https://api.iamport.kr/#!/payments/cancelPayment
     def cancel(body)
