@@ -39,6 +39,13 @@ body = {
 Iamport.cancel(body)
 ```
 
+## find API
+가맹점지정 고유번호를 이용하여 결제정보를 찾는 API
+
+```
+Iamport.find("M00001")
+```
+
 ## Installation
 
 Add this line to your application's Gemfile:
