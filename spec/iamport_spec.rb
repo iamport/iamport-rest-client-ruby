@@ -172,5 +172,29 @@ describe Iamport do
       expect(res["merchant_uid"]).to eq("M00001")
     end
   end
+
+  describe 'find' do
+    it 'return pyments using merchant_uid' do
+      allow(Iamport).to receive(:token).and_return 'NEW_TOKEN'
+
+      expected_url = "#{IAMPORT_HOST}/payments/find/M00001"
+      expected_params = {
+        headers: {
+          Authorization: "NEW_TOKEN"
+        },
+        body: {}
+      }
+
+      response = {
+          "response" => payment_json
+      }
+
+      expect(HTTParty).to receive(:get).with(expected_url, expected_params).and_return(response)
+
+      res = Iamport.find("M00001")
+      expect(res["merchant_uid"]).to eq("M00001")
+      expect(res["imp_uid"]).to eq("IMP_UID")
+    end
+  end
 end
 
