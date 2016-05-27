@@ -35,8 +35,7 @@ module Iamport
     def payment(imp_uid)
       uri = "payments/#{imp_uid}"
 
-      result = pay_get(uri)
-      result
+      pay_get(uri)
     end
 
     # Search payment information using status.
@@ -48,8 +47,7 @@ module Iamport
 
       uri = "payments/status/#{status}?page=#{page}"
 
-      result = pay_get(uri)
-      result
+      pay_get(uri)
     end
 
     # Find payment information using merchant uid
@@ -57,8 +55,7 @@ module Iamport
     def find(merchant_uid)
       uri = "payments/find/#{merchant_uid}"
 
-      result = pay_get(uri)
-      result
+      pay_get(uri)
     end
 
     # Canceled payments
@@ -66,31 +63,28 @@ module Iamport
     def cancel(body)
       uri = "payments/cancel"
 
-      result = pay_post(uri, body)
-      result
+      pay_post(uri, body)
     end
 
     private
 
     # Get header data
     def get_headers
-      { Authorization: token }
+      { "Authorization" => token }
     end
 
     # GET
     def pay_get(uri, payload = {})
       url = "#{IAMPORT_HOST}/#{uri}"
 
-      response = HTTParty.get url, headers: get_headers, body: payload
-      response["response"]
+      HTTParty.get url, headers: get_headers, body: payload
     end
 
     # POST
     def pay_post(uri, payload = {})
       url = "#{IAMPORT_HOST}/#{uri}"
 
-      response = HTTParty.post url, headers: get_headers, body: payload
-      response["response"]
+      HTTParty.post url, headers: get_headers, body: payload
     end
   end
 end

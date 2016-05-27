@@ -91,7 +91,7 @@ describe Iamport do
       expected_url = "#{IAMPORT_HOST}/payments/IMP_UID"
       expected_params = {
           headers: {
-              Authorization: "NEW_TOKEN"
+              "Authorization" => "NEW_TOKEN"
           },
           body: {}
       }
@@ -114,7 +114,7 @@ describe Iamport do
       expected_url = "#{IAMPORT_HOST}/payments/status/all?page=1"
       expected_params = {
           headers: {
-              Authorization: "NEW_TOKEN"
+              "Authorization" => "NEW_TOKEN"
           },
           body: {}
       }
@@ -146,7 +146,7 @@ describe Iamport do
       expected_url = "#{IAMPORT_HOST}/payments/cancel"
       expected_params = {
           headers: {
-              Authorization: "NEW_TOKEN"
+              "Authorization" => "NEW_TOKEN"
           },
           body: {
               imp_uid: "IMP_UID",
@@ -180,7 +180,7 @@ describe Iamport do
       expected_url = "#{IAMPORT_HOST}/payments/find/M00001"
       expected_params = {
         headers: {
-          Authorization: "NEW_TOKEN"
+          "Authorization" => "NEW_TOKEN"
         },
         body: {}
       }
