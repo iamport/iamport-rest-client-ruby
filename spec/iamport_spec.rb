@@ -13,12 +13,14 @@ describe Iamport, ".configure" do
       config.api_key = "API_KEY"
       config.api_secret = "API_SECRET"
     end
-    expect(Iamport.config.api_key).to eq "API_KEY"
-    expect(Iamport.config.api_secret).to eq "API_SECRET"
+    expect(Iamport.config.api_key).to eq("API_KEY")
+    expect(Iamport.config.api_secret).to eq("API_SECRET")
   end
 end
 
 describe Iamport do
+  IAMPORT_HOST = "https://api.iamport.kr"
+
   before do
     Iamport.configure do |config|
       config.api_key = "API_KEY"
@@ -28,18 +30,20 @@ describe Iamport do
 
   describe ".token" do
     it "generates and returns new token" do
-      expected_url = "https://api.iamport.kr:443/users/getToken"
+      expected_url = "#{IAMPORT_HOST}/users/getToken"
       expected_params = {
         body: {
          imp_key: "API_KEY",
          imp_secret: "API_SECRET",
         }
       }
+
       response = {
         "response" => {
           "access_token" => "NEW_TOKEN"
         }
       }
+
       expect(HTTParty).to receive(:post).with(expected_url, expected_params).and_return(response)
 
       expect(Iamport.token).to eq("NEW_TOKEN")
@@ -84,20 +88,37 @@ describe Iamport do
     it "returns payment info" do
       allow(Iamport).to receive(:token).and_return("NEW_TOKEN")
 
-      expected_url = "https://api.iamport.kr:443/payments/IMP_UID?_token=NEW_TOKEN"
+      expected_url = "#{IAMPORT_HOST}/payments/IMP_UID"
+      expected_params = {
+          headers: {
+              "Authorization" => "NEW_TOKEN"
+          },
+          body: {}
+      }
+
       response = {
         "response" => payment_json,
       }
-      expect(HTTParty).to receive(:post).with(expected_url).and_return(response)
+
+      expect(HTTParty).to receive(:get).with(expected_url, expected_params).and_return(response)
 
       res = Iamport.payment("IMP_UID")
       expect(res["imp_uid"]).to eq("IMP_UID")
     end
   end
+
   describe "payments" do
     it "returns payment list" do
       allow(Iamport).to receive(:token).and_return("NEW_TOKEN")
-      expected_url = "https://api.iamport.kr:443/payments/status/all?_token=NEW_TOKEN&page=1"
+
+      expected_url = "#{IAMPORT_HOST}/payments/status/all?page=1"
+      expected_params = {
+          headers: {
+              "Authorization" => "NEW_TOKEN"
+          },
+          body: {}
+      }
+
       response = {
         "response" => {
           "total" => 150,
@@ -109,11 +130,70 @@ describe Iamport do
           ]
         }
       }
-      expect(HTTParty).to receive(:post).with(expected_url).and_return(response)
+
+      expect(HTTParty).to receive(:get).with(expected_url, expected_params).and_return(response)
 
       res = Iamport.payments
       expect(res["total"]).to eq(150)
       expect(res["list"].size).to eq(2)
+    end
+  end
+
+  describe 'cancel' do
+    it 'return cancel info' do
+      allow(Iamport).to receive(:token).and_return 'NEW_TOKEN'
+
+      expected_url = "#{IAMPORT_HOST}/payments/cancel"
+      expected_params = {
+          headers: {
+              "Authorization" => "NEW_TOKEN"
+          },
+          body: {
+              imp_uid: "IMP_UID",
+              merchant_uid: "M00001"
+          }
+      }
+
+      response = {
+          "code" => 0,
+          "message" => '',
+          "response" => {
+              "imp_uid" => "IMP_UID",
+              "merchant_uid" => "M00001"
+          }
+      }
+
+      expect(HTTParty).to receive(:post).with(expected_url, expected_params).and_return(response)
+
+      body = expected_params[:body]
+
+      res = Iamport.cancel(body)
+      expect(res["imp_uid"]).to eq("IMP_UID")
+      expect(res["merchant_uid"]).to eq("M00001")
+    end
+  end
+
+  describe 'find' do
+    it 'return pyments using merchant_uid' do
+      allow(Iamport).to receive(:token).and_return 'NEW_TOKEN'
+
+      expected_url = "#{IAMPORT_HOST}/payments/find/M00001"
+      expected_params = {
+        headers: {
+          "Authorization" => "NEW_TOKEN"
+        },
+        body: {}
+      }
+
+      response = {
+          "response" => payment_json
+      }
+
+      expect(HTTParty).to receive(:get).with(expected_url, expected_params).and_return(response)
+
+      res = Iamport.find("M00001")
+      expect(res["merchant_uid"]).to eq("M00001")
+      expect(res["imp_uid"]).to eq("IMP_UID")
     end
   end
 end

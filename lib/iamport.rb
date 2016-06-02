@@ -1,7 +1,7 @@
 require "iamport/version"
 
 module Iamport
-  IAMPORT_HOST = "api.iamport.kr:443"
+  IAMPORT_HOST = "https://api.iamport.kr"
 
   class Config
     attr_accessor :api_key
@@ -17,25 +17,74 @@ module Iamport
       @config ||= Config.new
     end
 
+    # Get Token
+    # https://api.iamport.kr/#!/authenticate/getToken
     def token
-      url = "https://#{IAMPORT_HOST}/users/getToken"
-      result = HTTParty.post url, body: { imp_key: config.api_key, imp_secret: config.api_secret }
+      url = "#{IAMPORT_HOST}/users/getToken"
+      body = {
+          imp_key: config.api_key,
+          imp_secret: config.api_secret
+      }
+
+      result = HTTParty.post url, body: body
       result["response"]["access_token"]
     end
 
+    # Get payment information using imp_uid
+    # https://api.iamport.kr/#!/payments/getPaymentByImpUid
     def payment(imp_uid)
-      url = "https://#{IAMPORT_HOST}/payments/#{imp_uid}?_token=#{token}"
-      result = HTTParty.post url
-      result["response"]
+      uri = "payments/#{imp_uid}"
+
+      pay_get(uri)
     end
 
+    # Search payment information using status.
+    # default items per page: 20
+    # https://api.iamport.kr/#!/payments/getPaymentsByStatus
     def payments(options = {})
       status = options[:status] || "all"
       page = options[:page] || 1
 
-      url = "https://#{IAMPORT_HOST}/payments/status/#{status}?_token=#{token}&page=#{page}"
-      result = HTTParty.post url
-      result["response"]
+      uri = "payments/status/#{status}?page=#{page}"
+
+      pay_get(uri)
+    end
+
+    # Find payment information using merchant uid
+    # https://api.iamport.kr/#!/payments/getPaymentByMerchantUid
+    def find(merchant_uid)
+      uri = "payments/find/#{merchant_uid}"
+
+      pay_get(uri)
+    end
+
+    # Canceled payments
+    # https://api.iamport.kr/#!/payments/cancelPayment
+    def cancel(body)
+      uri = "payments/cancel"
+
+      pay_post(uri, body)
+    end
+
+    private
+
+    # Get header data
+    def get_headers
+      { "Authorization" => token }
+    end
+
+    # GET
+    def pay_get(uri, payload = {})
+      url = "#{IAMPORT_HOST}/#{uri}"
+
+      HTTParty.get url, headers: get_headers, body: payload
+    end
+
+    # POST
+    def pay_post(uri, payload = {})
+      url = "#{IAMPORT_HOST}/#{uri}"
+
+      HTTParty.post url, headers: get_headers, body: payload
     end
   end
 end
