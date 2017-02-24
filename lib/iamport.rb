@@ -65,6 +65,14 @@ module Iamport
 
       pay_post(uri, body)
     end
+    
+    # Issuing a billing key by customer_uid
+    # https://api.iamport.kr/#!/subscribe/customers/:customer_uid
+    def subscribe_customer(customer_uid, body)
+      uri = "subscribe/customers/#{customer_uid}"
+
+      pay_post(uri, body)
+    end
 
     private
 
