@@ -197,7 +197,7 @@ describe Iamport do
     end
   end
 
-  describe 'subscribe_customer' do
+  describe 'create_subscribe_customer' do
     it 'must return customer subscription info' do
       allow(Iamport).to receive(:token).and_return 'NEW_TOKEN'
 
@@ -228,7 +228,7 @@ describe Iamport do
 
       body = expected_params[:body]
 
-      res = Iamport.subscribe_customer(customer_uid, body)
+      res = Iamport.create_subscribe_customer(customer_uid, body)
       expect(res["code"]).to eq(response["code"])
       expect(res["message"]).to eq(response["message"])
       expect(res["response"]).to eq(response["response"])
