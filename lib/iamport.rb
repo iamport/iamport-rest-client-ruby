@@ -1,7 +1,7 @@
 require "iamport/version"
 
 module Iamport
-  IAMPORT_HOST = "https://api.iamport.kr"
+  IAMPORT_HOST = "https://api.iamport.kr".freeze
 
   class Config
     attr_accessor :api_key
@@ -22,8 +22,8 @@ module Iamport
     def token
       url = "#{IAMPORT_HOST}/users/getToken"
       body = {
-          imp_key: config.api_key,
-          imp_secret: config.api_secret
+        imp_key: config.api_key,
+        imp_secret: config.api_secret,
       }
 
       result = HTTParty.post url, body: body
@@ -66,25 +66,54 @@ module Iamport
       pay_post(uri, body)
     end
 
+    # Subscribe payment
+    %i(onetime again).each do |subscribe_method|
+      define_method subscribe_method do |payload = {}|
+        uri = sprintf("subscribe/payments/%s", subscribe_method)
+        pay_post(uri, payload)
+      end
+    end
+
+    CUSTOMER_APIS = {
+      customer: "get",
+      create_customer: "post",
+      delete_customer: "delete",
+    }.freeze
+
+    CUSTOMER_APIS.each do |api|
+      define_method api.first do |customer_uid|
+        uri = sprintf("subscribe/customers/%s", customer_uid)
+        send("pay_#{api.last}", uri)
+      end
+    end
+
+    def customer_payments(customer_uid)
+      uri = sprintf("subscribe/customers/%s/payments", customer_uid)
+      pay_get(uri)
+    end
+
     private
 
     # Get header data
-    def get_headers
+    def headers
       { "Authorization" => token }
     end
 
     # GET
     def pay_get(uri, payload = {})
       url = "#{IAMPORT_HOST}/#{uri}"
-
-      HTTParty.get url, headers: get_headers, body: payload
+      HTTParty.get url, headers: headers, body: payload
     end
 
     # POST
     def pay_post(uri, payload = {})
       url = "#{IAMPORT_HOST}/#{uri}"
+      HTTParty.post url, headers: headers, body: payload
+    end
 
-      HTTParty.post url, headers: get_headers, body: payload
+    def pay_delete(uri, payload = {})
+      url = "#{IAMPORT_HOST}/#{uri}"
+      HTTParty.delete url, headers: headers, body: payload
     end
   end
 end

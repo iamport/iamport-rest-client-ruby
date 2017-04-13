@@ -1,7 +1,9 @@
 # coding: utf-8
-lib = File.expand_path('../lib', __FILE__)
+
+lib = File.expand_path("../lib", __FILE__)
+
 $LOAD_PATH.unshift(lib) unless $LOAD_PATH.include?(lib)
-require 'iamport/version'
+require "iamport/version"
 
 Gem::Specification.new do |spec|
   spec.name          = "iamport"
@@ -24,4 +26,5 @@ Gem::Specification.new do |spec|
   spec.add_development_dependency "rspec"
 
   spec.add_runtime_dependency "httparty"
+  spec.add_runtime_dependency "pry"
 end
