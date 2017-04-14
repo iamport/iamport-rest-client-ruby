@@ -73,10 +73,10 @@ describe Iamport do
       "custom_data" => nil,
       "fail_reason" => nil,
       "failed_at" => 0,
-      "IMP_UID" => IMP_UID,
+      "imp_uid" => IMP_UID,
       "merchant_uid" => MERCHANT_UID,
       "name" => "제품이름",
-      "paid_at" => 1_111,
+      "paid_at" => 1446691529,
       "pay_method" => "card",
       "pg_provider" => "nice",
       "pg_tid" => "w00000000000000000000000000001",
@@ -96,40 +96,7 @@ describe Iamport do
     {
       "code" => 0,
       "message" => "string",
-      "response" => {
-        "imp_uid" => IMP_UID,
-        "merchant_uid" => MERCHANT_UID,
-        "pay_method" => "string",
-        "pg_provider" => "string",
-        "pg_tid" => "string",
-        "escrow" => true,
-        "apply_num" => "string",
-        "bank_name" => "string",
-        "card_name" => "string",
-        "card_quota" => 0,
-        "vbank_name" => "string",
-        "vbank_num" => "string",
-        "vbank_holder" => "string",
-        "vbank_date" => 0,
-        "name" => "string",
-        "amount" => 0,
-        "cancel_amount" => 0,
-        "currency" => "string",
-        "buyer_name" => "string",
-        "buyer_email" => "string",
-        "buyer_tel" => "string",
-        "buyer_addr" => "string",
-        "buyer_postcode" => "string",
-        "custom_data" => "string",
-        "user_agent" => "string",
-        "status" => "ready",
-        "paid_at" => 0,
-        "failed_at" => 0,
-        "cancelled_at" => 0,
-        "fail_reason" => "string",
-        "cancel_reason" => "string",
-        "receipt_url" => "string",
-      },
+      "response" => payment_json,
     }
   end
 
@@ -155,53 +122,7 @@ describe Iamport do
     {
       "code" => 0,
       "message" => "string",
-      "response" =>
-      {
-        "imp_uid" => IMP_UID,
-        "merchant_uid" => MERCHANT_UID,
-        "pay_method" => "string",
-        "pg_provider" => "string",
-        "pg_tid" => "string",
-        "escrow" => true,
-        "apply_num" => "string",
-        "bank_name" => "string",
-        "card_name" => "string",
-        "card_quota" => 0,
-        "vbank_name" => "string",
-        "vbank_num" => "string",
-        "vbank_holder" => "string",
-        "vbank_date" => 0,
-        "name" => "string",
-        "amount" => 0,
-        "cancel_amount" => 0,
-        "currency" => "string",
-        "buyer_name" => "string",
-        "buyer_email" => "string",
-        "buyer_tel" => "string",
-        "buyer_addr" => "string",
-        "buyer_postcode" => "string",
-        "custom_data" => "string",
-        "user_agent" => "string",
-        "status" => "ready",
-        "paid_at" => 0,
-        "failed_at" => 0,
-        "cancelled_at" => 0,
-        "fail_reason" => "string",
-        "cancel_reason" => "string",
-        "receipt_url" => "string",
-        "cancel_history" => [
-          {
-            "pg_tid" => "string",
-            "amount" => 0,
-            "cancelled_at" => 0,
-            "reason" => "string",
-            "receipt_url" => "string",
-          },
-        ],
-        "cancel_receipt_urls" => [
-          "string",
-        ],
-      },
+      "response" => payment_json,
     }
   end
 
@@ -214,57 +135,11 @@ describe Iamport do
         "previous" => 0,
         "next" => 0,
         "list" => [
-          {
-            "imp_uid" => IMP_UID,
-            "merchant_uid" => MERCHANT_UID,
-            "pay_method" => "string",
-            "pg_provider" => "string",
-            "pg_tid" => "string",
-            "escrow" => true,
-            "apply_num" => "string",
-            "bank_name" => "string",
-            "card_name" => "string",
-            "card_quota" => 0,
-            "vbank_name" => "string",
-            "vbank_num" => "string",
-            "vbank_holder" => "string",
-            "vbank_date" => 0,
-            "name" => "string",
-            "amount" => 0,
-            "cancel_amount" => 0,
-            "currency" => "string",
-            "buyer_name" => "string",
-            "buyer_email" => "string",
-            "buyer_tel" => "string",
-            "buyer_addr" => "string",
-            "buyer_postcode" => "string",
-            "custom_data" => "string",
-            "user_agent" => "string",
-            "status" => "ready",
-            "paid_at" => 0,
-            "failed_at" => 0,
-            "cancelled_at" => 0,
-            "fail_reason" => "string",
-            "cancel_reason" => "string",
-            "receipt_url" => "string",
-            "cancel_history" => [
-              {
-                "pg_tid" => "string",
-                "amount" => 0,
-                "cancelled_at" => 0,
-                "reason" => "string",
-                "receipt_url" => "string",
-              },
-            ],
-            "cancel_receipt_urls" => [
-              "string",
-            ],
-          },
+          payment_json,
         ],
       },
     }
   end
-
   describe "payment" do
     it "returns payment info" do
       allow(Iamport).to receive(:token).and_return("NEW_TOKEN")
@@ -284,7 +159,7 @@ describe Iamport do
       expect(HTTParty).to receive(:get).with(expected_url, expected_params).and_return(response)
 
       res = Iamport.payment(IMP_UID)
-      expect(res["response"]["IMP_UID"]).to eq(IMP_UID)
+      expect(res["response"]["imp_uid"]).to eq(IMP_UID)
     end
   end
 
@@ -528,7 +403,7 @@ describe Iamport do
 
       res = Iamport.find("M00001")
       expect(res["response"]["merchant_uid"]).to eq("M00001")
-      expect(res["response"]["IMP_UID"]).to eq(IMP_UID)
+      expect(res["response"]["imp_uid"]).to eq(IMP_UID)
     end
   end
 end
