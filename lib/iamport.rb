@@ -66,7 +66,6 @@ module Iamport
       pay_post(uri, body)
     end
 
-    # Subscribe payment
     %i(onetime again).each do |subscribe_method|
       define_method subscribe_method do |payload = {}|
         uri = sprintf("subscribe/payments/%s", subscribe_method)
@@ -74,21 +73,20 @@ module Iamport
       end
     end
 
-    CUSTOMER_APIS = {
-      customer: "get",
-      create_customer: "post",
-      delete_customer: "delete",
-    }.freeze
-
-    CUSTOMER_APIS.each do |api|
-      define_method api.first do |customer_uid|
+    { customer: :get, delete_customer: :delete}.each do |method_name, type|
+      define_method method_name do |customer_uid|
         uri = sprintf("subscribe/customers/%s", customer_uid)
-        send("pay_#{api.last}", uri)
+        send("pay_#{type}", uri)
       end
     end
 
+    def create_customer(customer_uid, payload = {})
+      uri = sprintf("subscribe/customers/%s", customer_uid)
+      pay_post(uri, payload)
+    end
+
     def customer_payments(customer_uid)
-      uri = sprintf("subscribe/customers/%s/payments", customer_uid)
+      uri = "subscribe/customers/#{customer_uid}/payments"
       pay_get(uri)
     end
 

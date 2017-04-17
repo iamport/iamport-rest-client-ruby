@@ -140,6 +140,16 @@ describe Iamport do
       },
     }
   end
+
+  let(:customer_payment_info) do
+    {
+      merchant_uid: "xxxxx",
+      amount: 11_111,
+      card_number: "dddd-dddd-dddd-ddddd",
+      expiry: "yyy-mm",
+      birth: "dddddd",
+    }
+  end
   describe "payment" do
     it "returns payment info" do
       allow(Iamport).to receive(:token).and_return("NEW_TOKEN")
@@ -198,19 +208,11 @@ describe Iamport do
     it "payment onetime" do
       one_time_url = "#{IAMPORT_HOST}/subscribe/payments/onetime"
 
-      payload = {
-        merchant_uid: "xxxxx",
-        amount: 11_111,
-        card_number: "dddd-dddd-dddd-ddddd",
-        expiry: "yyy-mm",
-        birth: "dddddd",
-      }
-
       expected_params = {
         headers: {
           "Authorization" => "NEW_TOKEN",
         },
-        body: payload,
+        body: customer_payment_info,
       }
 
       response = {
@@ -254,11 +256,12 @@ describe Iamport do
 
     it "create_customer" do
       customer_url = sprintf("%s/subscribe/customers/%s", IAMPORT_HOST, customer_uid)
+
       expected_params = {
         headers: {
           "Authorization" => "NEW_TOKEN",
         },
-        body: {},
+        body: customer_payment_info,
       }
 
       response = {
@@ -267,7 +270,9 @@ describe Iamport do
 
       expect(HTTParty).to receive(:post).with(customer_url, expected_params)
         .and_return(response)
-      res = Iamport.create_customer(customer_uid)
+
+      body = expected_params[:body]
+      res = Iamport.create_customer(customer_uid, body)
 
       expect(res["response"]["code"]).to eq(0)
       expect(res["response"]["response"]["customer_uid"]).to eq(customer_uid)
@@ -368,7 +373,7 @@ describe Iamport do
         "code" => 0,
         "message" => "",
         "response" => {
-          "IMP_UID" => IMP_UID,
+          "imp_uid" => IMP_UID,
           "merchant_uid" => "M00001",
         },
       }
@@ -378,7 +383,7 @@ describe Iamport do
       body = expected_params[:body]
 
       res = Iamport.cancel(body)
-      expect(res["response"]["IMP_UID"]).to eq(IMP_UID)
+      expect(res["response"]["imp_uid"]).to eq(IMP_UID)
       expect(res["response"]["merchant_uid"]).to eq("M00001")
     end
   end
