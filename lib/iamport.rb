@@ -1,4 +1,5 @@
 require "iamport/version"
+require "iamport/errors"
 
 module Iamport
   IAMPORT_HOST = "https://api.iamport.kr".freeze
@@ -27,6 +28,12 @@ module Iamport
       }
 
       result = HTTParty.post url, body: body
+
+      unless result["response"]
+        body = "Invalid token"
+        raise Iamport::AuthorizationError.new(status_code: 401, body: body)
+      end
+
       result["response"]["access_token"]
     end
 
@@ -73,7 +80,7 @@ module Iamport
       end
     end
 
-    { customer: :get, delete_customer: :delete}.each do |method_name, type|
+    { customer: :get, delete_customer: :delete }.each do |method_name, type|
       define_method method_name do |customer_uid|
         uri = sprintf("subscribe/customers/%s", customer_uid)
         send("pay_#{type}", uri)

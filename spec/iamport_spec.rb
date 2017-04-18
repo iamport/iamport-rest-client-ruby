@@ -16,11 +16,11 @@ end
 describe Iamport, ".configure" do
   it "sets configuration" do
     Iamport.configure do |config|
-      config.api_key = API_KEY
-      config.api_secret = API_SECRET
+      config.api_key = "API_KEY"
+      config.api_secret = "API_SECRET"
     end
-    expect(Iamport.config.api_key).to eq(API_KEY)
-    expect(Iamport.config.api_secret).to eq(API_SECRET)
+    expect(Iamport.config.api_key).to eq("API_KEY")
+    expect(Iamport.config.api_secret).to eq("API_SECRET")
   end
 end
 
@@ -54,6 +54,10 @@ describe Iamport do
 
       expect(Iamport.token).to eq("NEW_TOKEN")
     end
+
+    it "raise error when invalid request" do
+      expect { Iamport.token }.to raise_error(Iamport::AuthorizationError)
+    end
   end
 
   let(:payment_json) do
@@ -76,7 +80,7 @@ describe Iamport do
       "imp_uid" => IMP_UID,
       "merchant_uid" => MERCHANT_UID,
       "name" => "제품이름",
-      "paid_at" => 1446691529,
+      "paid_at" => 1_446_691_529,
       "pay_method" => "card",
       "pg_provider" => "nice",
       "pg_tid" => "w00000000000000000000000000001",
