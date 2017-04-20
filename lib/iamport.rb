@@ -30,8 +30,8 @@ module Iamport
       result = HTTParty.post url, body: body
 
       unless result["response"]
-        body = "Invalid token"
-        raise Iamport::AuthorizationError.new(status_code: 401, body: body)
+        error_message = "Invalid token"
+        raise Iamport::Errors::AuthorizationError.new(status_code: 401, body: error_message)
       end
 
       result["response"]["access_token"]
@@ -73,22 +73,23 @@ module Iamport
       pay_post(uri, body)
     end
 
-    %i(onetime again).each do |subscribe_method|
-      define_method subscribe_method do |payload = {}|
-        uri = sprintf("subscribe/payments/%s", subscribe_method)
+    %i(onetime again).each do |prefix_endpoint|
+      subscribe_method = "#{prefix_endpoint}_payments"
+      define_method(subscribe_method) do |payload = {}|
+        uri = "subscribe/payments/#{prefix_endpoint}"
         pay_post(uri, payload)
       end
     end
 
     { customer: :get, delete_customer: :delete }.each do |method_name, type|
       define_method method_name do |customer_uid|
-        uri = sprintf("subscribe/customers/%s", customer_uid)
+        uri = "subscribe/customers/#{customer_uid}"
         send("pay_#{type}", uri)
       end
     end
 
     def create_customer(customer_uid, payload = {})
-      uri = sprintf("subscribe/customers/%s", customer_uid)
+      uri = "subscribe/customers/#{customer_uid}"
       pay_post(uri, payload)
     end
 

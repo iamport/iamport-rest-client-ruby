@@ -56,7 +56,7 @@ describe Iamport do
     end
 
     it "raise error when invalid request" do
-      expect { Iamport.token }.to raise_error(Iamport::AuthorizationError)
+      expect { Iamport.token }.to raise_error(Iamport::Errors::AuthorizationError)
     end
   end
 
@@ -154,7 +154,8 @@ describe Iamport do
       birth: "dddddd",
     }
   end
-  describe "payment" do
+
+  describe ".payment" do
     it "returns payment info" do
       allow(Iamport).to receive(:token).and_return("NEW_TOKEN")
 
@@ -177,7 +178,7 @@ describe Iamport do
     end
   end
 
-  describe "payments" do
+  describe ".payments" do
     it "returns payment list" do
       allow(Iamport).to receive(:token).and_return("NEW_TOKEN")
 
@@ -208,8 +209,9 @@ describe Iamport do
     end
   end
 
-  describe "subscribe" do
-    it "payment onetime" do
+  describe ".onetime_payments" do
+    it "create onetime payments for customer" do
+      allow(Iamport).to receive(:token).and_return "NEW_TOKEN"
       one_time_url = "#{IAMPORT_HOST}/subscribe/payments/onetime"
 
       expected_params = {
@@ -225,13 +227,16 @@ describe Iamport do
 
       expect(HTTParty).to receive(:post).with(one_time_url, expected_params).and_return(response)
       body = expected_params[:body]
-      res = Iamport.onetime(body)
+      res = Iamport.onetime_payments(body)
 
       expect(res["response"]["code"]).to eq(0)
       expect(res["response"]["response"]["imp_uid"]).to eq(IMP_UID)
     end
+  end
 
-    it "payment again" do
+  describe ".again_payments" do
+    it "try again payment for customer" do
+      allow(Iamport).to receive(:token).and_return "NEW_TOKEN"
       payment_again_url = "#{IAMPORT_HOST}/subscribe/payments/again"
       payload = {
         customer_uid: "xxxxx",
@@ -252,13 +257,16 @@ describe Iamport do
       expect(HTTParty).to receive(:post).with(payment_again_url, expected_params)
         .and_return(response)
       body = expected_params[:body]
-      res = Iamport.again(body)
+      res = Iamport.again_payments(body)
 
       expect(res["response"]["code"]).to eq(0)
       expect(res["response"]["response"]["merchant_uid"]).to eq(MERCHANT_UID)
     end
+  end
 
-    it "create_customer" do
+  describe ".create_customer" do
+    it "create new subscribe customer" do
+      allow(Iamport).to receive(:token).and_return "NEW_TOKEN"
       customer_url = sprintf("%s/subscribe/customers/%s", IAMPORT_HOST, customer_uid)
 
       expected_params = {
@@ -282,8 +290,11 @@ describe Iamport do
       expect(res["response"]["response"]["customer_uid"]).to eq(customer_uid)
       expect(res["response"]["response"]["customer_uid"]).to be_a_kind_of(String)
     end
+  end
 
-    it "get_customer" do
+  describe ".get_customer" do
+    it "get subscribe customer info" do
+      allow(Iamport).to receive(:token).and_return "NEW_TOKEN"
       customer_url = sprintf("%s/subscribe/customers/%s", IAMPORT_HOST, customer_uid)
       expected_params = {
         headers: {
@@ -304,8 +315,11 @@ describe Iamport do
       expect(res["response"]["response"]["customer_uid"]).to eq(customer_uid)
       expect(res["response"]["response"]["customer_uid"]).to be_a_kind_of(String)
     end
+  end
 
-    it "delete_customer" do
+  describe ".delete_customer" do
+    it "delete customer" do
+      allow(Iamport).to receive(:token).and_return "NEW_TOKEN"
       delete_customer_url = sprintf("%s/subscribe/customers/%s", IAMPORT_HOST, customer_uid)
       expected_params = {
         headers: {
@@ -326,8 +340,11 @@ describe Iamport do
       expect(res["response"]["response"]["customer_uid"]).to eq(customer_uid)
       expect(res["response"]["response"]["customer_uid"]).to be_a_kind_of(String)
     end
+  end
 
-    it "get customer_payments" do
+  describe ".customer_payments" do
+    it "get payments of customer" do
+      allow(Iamport).to receive(:token).and_return "NEW_TOKEN"
       customer_payments_url =
         sprintf("%s/subscribe/customers/%s/payments", IAMPORT_HOST, customer_uid)
 
@@ -352,13 +369,9 @@ describe Iamport do
       expect(res["response"]["response"]["list"].first["merchant_uid"]).to eq(MERCHANT_UID)
       expect(res["response"]["response"]["list"].first["imp_uid"]).to eq(IMP_UID)
     end
-
-    before(:example) do
-      allow(Iamport).to receive(:token).and_return "NEW_TOKEN"
-    end
   end
 
-  describe "cancel" do
+  describe ".cancel" do
     it "return cancel info" do
       allow(Iamport).to receive(:token).and_return "NEW_TOKEN"
 
@@ -383,7 +396,6 @@ describe Iamport do
       }
 
       expect(HTTParty).to receive(:post).with(expected_url, expected_params).and_return(response)
-
       body = expected_params[:body]
 
       res = Iamport.cancel(body)
@@ -392,10 +404,9 @@ describe Iamport do
     end
   end
 
-  describe "find" do
-    it "return pyments using merchant_uid" do
+  describe ".find" do
+    it "return payments using merchant_uid" do
       allow(Iamport).to receive(:token).and_return "NEW_TOKEN"
-
       expected_url = "#{IAMPORT_HOST}/payments/find/M00001"
       expected_params = {
         headers: {
