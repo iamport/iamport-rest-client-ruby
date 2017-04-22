@@ -1,7 +1,3 @@
-require "spec_helper"
-require "httparty"
-require "pry"
-
 API_KEY = "xxxxxxx".freeze
 API_SECRET = "xxxxxx".freeze
 IMP_UID = "xxxxxxx".freeze
@@ -210,7 +206,7 @@ describe Iamport do
   end
 
   describe ".onetime_payments" do
-    it "create onetime payments for customer" do
+    it "returns create onetime payments for customer" do
       allow(Iamport).to receive(:token).and_return "NEW_TOKEN"
       one_time_url = "#{IAMPORT_HOST}/subscribe/payments/onetime"
 
@@ -235,7 +231,7 @@ describe Iamport do
   end
 
   describe ".again_payments" do
-    it "try again payment for customer" do
+    it "returns try again payment for customer" do
       allow(Iamport).to receive(:token).and_return "NEW_TOKEN"
       payment_again_url = "#{IAMPORT_HOST}/subscribe/payments/again"
       payload = {
@@ -265,9 +261,9 @@ describe Iamport do
   end
 
   describe ".create_customer" do
-    it "create new subscribe customer" do
+    it "returns create new subscribe customer" do
       allow(Iamport).to receive(:token).and_return "NEW_TOKEN"
-      customer_url = sprintf("%s/subscribe/customers/%s", IAMPORT_HOST, customer_uid)
+      customer_url = "#{IAMPORT_HOST}/subscribe/customers/#{customer_uid}"
 
       expected_params = {
         headers: {
@@ -293,9 +289,9 @@ describe Iamport do
   end
 
   describe ".get_customer" do
-    it "get subscribe customer info" do
+    it "returns get subscribe customer info" do
       allow(Iamport).to receive(:token).and_return "NEW_TOKEN"
-      customer_url = sprintf("%s/subscribe/customers/%s", IAMPORT_HOST, customer_uid)
+      customer_url = "#{IAMPORT_HOST}/subscribe/customers/#{customer_uid}"
       expected_params = {
         headers: {
           "Authorization" => "NEW_TOKEN",
@@ -318,9 +314,9 @@ describe Iamport do
   end
 
   describe ".delete_customer" do
-    it "delete customer" do
+    it "returns delete customer" do
       allow(Iamport).to receive(:token).and_return "NEW_TOKEN"
-      delete_customer_url = sprintf("%s/subscribe/customers/%s", IAMPORT_HOST, customer_uid)
+      delete_customer_url = "#{IAMPORT_HOST}/subscribe/customers/#{customer_uid}"
       expected_params = {
         headers: {
           "Authorization" => "NEW_TOKEN",
@@ -343,10 +339,10 @@ describe Iamport do
   end
 
   describe ".customer_payments" do
-    it "get payments of customer" do
+    it "returns get payments of customer" do
       allow(Iamport).to receive(:token).and_return "NEW_TOKEN"
       customer_payments_url =
-        sprintf("%s/subscribe/customers/%s/payments", IAMPORT_HOST, customer_uid)
+        "#{IAMPORT_HOST}/subscribe/customers/#{customer_uid}/payments"
 
       expected_params = {
         headers: {
@@ -372,7 +368,7 @@ describe Iamport do
   end
 
   describe ".cancel" do
-    it "return cancel info" do
+    it "returns cancel info" do
       allow(Iamport).to receive(:token).and_return "NEW_TOKEN"
 
       expected_url = "#{IAMPORT_HOST}/payments/cancel"
@@ -405,7 +401,7 @@ describe Iamport do
   end
 
   describe ".find" do
-    it "return payments using merchant_uid" do
+    it "returns payments using merchant_uid" do
       allow(Iamport).to receive(:token).and_return "NEW_TOKEN"
       expected_url = "#{IAMPORT_HOST}/payments/find/M00001"
       expected_params = {

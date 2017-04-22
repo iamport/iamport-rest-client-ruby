@@ -1,5 +1,6 @@
 require "iamport/version"
 require "iamport/errors"
+require "httparty"
 
 module Iamport
   IAMPORT_HOST = "https://api.iamport.kr".freeze
@@ -73,16 +74,16 @@ module Iamport
       pay_post(uri, body)
     end
 
-    %i(onetime again).each do |prefix_endpoint|
-      subscribe_method = "#{prefix_endpoint}_payments"
+    %i(onetime again).each do |method_name_prefix|
+      subscribe_method = "#{method_name_prefix}_payments"
       define_method(subscribe_method) do |payload = {}|
-        uri = "subscribe/payments/#{prefix_endpoint}"
+        uri = "subscribe/payments/#{method_name_prefix}"
         pay_post(uri, payload)
       end
     end
 
     { customer: :get, delete_customer: :delete }.each do |method_name, type|
-      define_method method_name do |customer_uid|
+      define_method(method_name) do |customer_uid|
         uri = "subscribe/customers/#{customer_uid}"
         send("pay_#{type}", uri)
       end
@@ -108,18 +109,18 @@ module Iamport
     # GET
     def pay_get(uri, payload = {})
       url = "#{IAMPORT_HOST}/#{uri}"
-      HTTParty.get url, headers: headers, body: payload
+      HTTParty.get(url, headers: headers, body: payload)
     end
 
     # POST
     def pay_post(uri, payload = {})
       url = "#{IAMPORT_HOST}/#{uri}"
-      HTTParty.post url, headers: headers, body: payload
+      HTTParty.post(url, headers: headers, body: payload)
     end
 
     def pay_delete(uri, payload = {})
       url = "#{IAMPORT_HOST}/#{uri}"
-      HTTParty.delete url, headers: headers, body: payload
+      HTTParty.delete(url, headers: headers, body: payload)
     end
   end
 end
