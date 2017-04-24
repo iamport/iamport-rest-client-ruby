@@ -1,5 +1,4 @@
 require "iamport/version"
-require "iamport/errors"
 require "httparty"
 
 module Iamport
@@ -30,11 +29,7 @@ module Iamport
 
       result = HTTParty.post url, body: body
 
-      unless result["response"]
-        error_message = "Invalid token"
-        raise Iamport::Errors::AuthorizationError.new(status_code: 401, body: error_message)
-      end
-
+      raise "Invalid token" unless result["response"]
       result["response"]["access_token"]
     end
 

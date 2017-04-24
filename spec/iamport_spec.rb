@@ -1,7 +1,7 @@
-API_KEY = "xxxxxxx".freeze
-API_SECRET = "xxxxxx".freeze
-IMP_UID = "xxxxxxx".freeze
-MERCHANT_UID = "M00001".freeze
+api_key = "xxxxxxx"
+api_secret = "xxxxxx"
+imp_uid = "xxxxxxx"
+merchant_uid = "M00001"
 
 describe Iamport, "::VERSION" do
   it "has a version number" do
@@ -25,8 +25,8 @@ describe Iamport do
 
   before do
     Iamport.configure do |config|
-      config.api_key = API_KEY
-      config.api_secret = API_SECRET
+      config.api_key = api_key
+      config.api_secret = api_secret
     end
   end
 
@@ -35,8 +35,8 @@ describe Iamport do
       expected_url = "#{IAMPORT_HOST}/users/getToken"
       expected_params = {
         body: {
-          imp_key: API_KEY,
-          imp_secret: API_SECRET,
+          imp_key: api_key,
+          imp_secret: api_secret,
         },
       }
 
@@ -52,7 +52,7 @@ describe Iamport do
     end
 
     it "raise error when invalid request" do
-      expect { Iamport.token }.to raise_error(Iamport::Errors::AuthorizationError)
+      expect { Iamport.token }.to raise_error
     end
   end
 
@@ -73,8 +73,8 @@ describe Iamport do
       "custom_data" => nil,
       "fail_reason" => nil,
       "failed_at" => 0,
-      "imp_uid" => IMP_UID,
-      "merchant_uid" => MERCHANT_UID,
+      "imp_uid" => imp_uid,
+      "merchant_uid" => merchant_uid,
       "name" => "제품이름",
       "paid_at" => 1_446_691_529,
       "pay_method" => "card",
@@ -155,7 +155,7 @@ describe Iamport do
     it "returns payment info" do
       allow(Iamport).to receive(:token).and_return("NEW_TOKEN")
 
-      expected_url = "#{IAMPORT_HOST}/payments/#{IMP_UID}"
+      expected_url = "#{IAMPORT_HOST}/payments/#{imp_uid}"
       expected_params = {
         headers: {
           "Authorization" => "NEW_TOKEN",
@@ -169,8 +169,8 @@ describe Iamport do
 
       expect(HTTParty).to receive(:get).with(expected_url, expected_params).and_return(response)
 
-      res = Iamport.payment(IMP_UID)
-      expect(res["response"]["imp_uid"]).to eq(IMP_UID)
+      res = Iamport.payment(imp_uid)
+      expect(res["response"]["imp_uid"]).to eq(imp_uid)
     end
   end
 
@@ -226,7 +226,7 @@ describe Iamport do
       res = Iamport.onetime_payments(body)
 
       expect(res["response"]["code"]).to eq(0)
-      expect(res["response"]["response"]["imp_uid"]).to eq(IMP_UID)
+      expect(res["response"]["response"]["imp_uid"]).to eq(imp_uid)
     end
   end
 
@@ -256,7 +256,7 @@ describe Iamport do
       res = Iamport.again_payments(body)
 
       expect(res["response"]["code"]).to eq(0)
-      expect(res["response"]["response"]["merchant_uid"]).to eq(MERCHANT_UID)
+      expect(res["response"]["response"]["merchant_uid"]).to eq(merchant_uid)
     end
   end
 
@@ -362,8 +362,8 @@ describe Iamport do
       expect(res["response"]["code"]).to eq(0)
       expect(res["response"]["response"]["list"]).to be_a_kind_of(Array)
       expect(res["response"]["response"]["total"]).to eq(1)
-      expect(res["response"]["response"]["list"].first["merchant_uid"]).to eq(MERCHANT_UID)
-      expect(res["response"]["response"]["list"].first["imp_uid"]).to eq(IMP_UID)
+      expect(res["response"]["response"]["list"].first["merchant_uid"]).to eq(merchant_uid)
+      expect(res["response"]["response"]["list"].first["imp_uid"]).to eq(imp_uid)
     end
   end
 
@@ -377,7 +377,7 @@ describe Iamport do
           "Authorization" => "NEW_TOKEN",
         },
         body: {
-          imp_uid: IMP_UID,
+          imp_uid: imp_uid,
           merchant_uid: "M00001",
         },
       }
@@ -386,7 +386,7 @@ describe Iamport do
         "code" => 0,
         "message" => "",
         "response" => {
-          "imp_uid" => IMP_UID,
+          "imp_uid" => imp_uid,
           "merchant_uid" => "M00001",
         },
       }
@@ -395,7 +395,7 @@ describe Iamport do
       body = expected_params[:body]
 
       res = Iamport.cancel(body)
-      expect(res["response"]["imp_uid"]).to eq(IMP_UID)
+      expect(res["response"]["imp_uid"]).to eq(imp_uid)
       expect(res["response"]["merchant_uid"]).to eq("M00001")
     end
   end
@@ -419,7 +419,7 @@ describe Iamport do
 
       res = Iamport.find("M00001")
       expect(res["response"]["merchant_uid"]).to eq("M00001")
-      expect(res["response"]["imp_uid"]).to eq(IMP_UID)
+      expect(res["response"]["imp_uid"]).to eq(imp_uid)
     end
   end
 end
