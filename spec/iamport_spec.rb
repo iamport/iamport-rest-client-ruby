@@ -51,7 +51,7 @@ describe Iamport do
       expect(Iamport.token).to eq("NEW_TOKEN")
     end
 
-    it "raise error when invalid request" do
+    it "raises error when invalid request" do
       expect { Iamport.token }.to raise_error
     end
   end
@@ -206,7 +206,7 @@ describe Iamport do
   end
 
   describe ".onetime_payments" do
-    it "returns create onetime payments for customer" do
+    it "creates onetime payments for customer" do
       allow(Iamport).to receive(:token).and_return "NEW_TOKEN"
       one_time_url = "#{IAMPORT_HOST}/subscribe/payments/onetime"
 
@@ -261,7 +261,7 @@ describe Iamport do
   end
 
   describe ".create_customer" do
-    it "returns create new subscribe customer" do
+    it "creates new subscribe customer" do
       allow(Iamport).to receive(:token).and_return "NEW_TOKEN"
       customer_url = "#{IAMPORT_HOST}/subscribe/customers/#{customer_uid}"
 
@@ -289,7 +289,7 @@ describe Iamport do
   end
 
   describe ".get_customer" do
-    it "returns get subscribe customer info" do
+    it "returns subscribe customer info" do
       allow(Iamport).to receive(:token).and_return "NEW_TOKEN"
       customer_url = "#{IAMPORT_HOST}/subscribe/customers/#{customer_uid}"
       expected_params = {
@@ -339,7 +339,7 @@ describe Iamport do
   end
 
   describe ".customer_payments" do
-    it "returns get payments of customer" do
+    it "returns payments of customer" do
       allow(Iamport).to receive(:token).and_return "NEW_TOKEN"
       customer_payments_url =
         "#{IAMPORT_HOST}/subscribe/customers/#{customer_uid}/payments"
