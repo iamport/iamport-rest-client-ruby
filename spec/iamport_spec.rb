@@ -52,7 +52,7 @@ describe Iamport do
     end
 
     it "raises error when invalid request" do
-      expect { Iamport.token }.to raise_error
+      expect { Iamport.token }.to raise_error("Invalid Token")
     end
   end
 
@@ -205,7 +205,7 @@ describe Iamport do
     end
   end
 
-  describe ".onetime_payments" do
+  describe ".create_onetime_payment" do
     it "creates onetime payments for customer" do
       allow(Iamport).to receive(:token).and_return "NEW_TOKEN"
       one_time_url = "#{IAMPORT_HOST}/subscribe/payments/onetime"
@@ -223,15 +223,15 @@ describe Iamport do
 
       expect(HTTParty).to receive(:post).with(one_time_url, expected_params).and_return(response)
       body = expected_params[:body]
-      res = Iamport.onetime_payments(body)
+      res = Iamport.create_onetime_payment(body)
 
       expect(res["response"]["code"]).to eq(0)
       expect(res["response"]["response"]["imp_uid"]).to eq(imp_uid)
     end
   end
 
-  describe ".again_payments" do
-    it "returns try again payment for customer" do
+  describe ".create_payments_again" do
+    it "creates payment again for customer" do
       allow(Iamport).to receive(:token).and_return "NEW_TOKEN"
       payment_again_url = "#{IAMPORT_HOST}/subscribe/payments/again"
       payload = {
@@ -253,7 +253,7 @@ describe Iamport do
       expect(HTTParty).to receive(:post).with(payment_again_url, expected_params)
         .and_return(response)
       body = expected_params[:body]
-      res = Iamport.again_payments(body)
+      res = Iamport.create_payments_again(body)
 
       expect(res["response"]["code"]).to eq(0)
       expect(res["response"]["response"]["merchant_uid"]).to eq(merchant_uid)
@@ -261,7 +261,7 @@ describe Iamport do
   end
 
   describe ".create_customer" do
-    it "creates new subscribe customer" do
+    it "creates new 'subscribe' customer" do
       allow(Iamport).to receive(:token).and_return "NEW_TOKEN"
       customer_url = "#{IAMPORT_HOST}/subscribe/customers/#{customer_uid}"
 
@@ -314,7 +314,7 @@ describe Iamport do
   end
 
   describe ".delete_customer" do
-    it "returns delete customer" do
+    it "deletes customer" do
       allow(Iamport).to receive(:token).and_return "NEW_TOKEN"
       delete_customer_url = "#{IAMPORT_HOST}/subscribe/customers/#{customer_uid}"
       expected_params = {

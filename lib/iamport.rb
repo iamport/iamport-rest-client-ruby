@@ -29,7 +29,7 @@ module Iamport
 
       result = HTTParty.post url, body: body
 
-      raise "Invalid token" unless result["response"]
+      raise "Invalid Token" unless result["response"]
       result["response"]["access_token"]
     end
 
@@ -69,14 +69,16 @@ module Iamport
       pay_post(uri, body)
     end
 
-    %i(onetime again).each do |method_name_prefix|
-      subscribe_method = "#{method_name_prefix}_payments"
-      define_method(subscribe_method) do |payload = {}|
-        uri = "subscribe/payments/#{method_name_prefix}"
-        pay_post(uri, payload)
-      end
+    def create_onetime_payment(payload = {})
+      uri = "subscribe/payments/onetime"
+      pay_post(uri, payload)
     end
 
+    def create_payments_again(payload = {})
+      uri = "subscribe/payments/again"
+      pay_post(uri, payload)
+    end
+    
     { customer: :get, delete_customer: :delete }.each do |method_name, type|
       define_method(method_name) do |customer_uid|
         uri = "subscribe/customers/#{customer_uid}"
