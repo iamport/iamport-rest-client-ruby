@@ -1,7 +1,7 @@
 require "iamport/version"
 
 module Iamport
-  IAMPORT_HOST = "https://api.iamport.kr"
+  IAMPORT_HOST = "https://api.iamport.kr".freeze
 
   class Config
     attr_accessor :api_key
