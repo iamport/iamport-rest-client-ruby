@@ -126,21 +126,6 @@ describe Iamport do
     }
   end
 
-  let(:customer_payment_response) do
-    {
-      "code" => 0,
-      "message" => "string",
-      "response" => {
-        "total" => 1,
-        "previous" => 0,
-        "next" => 0,
-        "list" => [
-          payment_json,
-        ],
-      },
-    }
-  end
-
   let(:customer_payment_info) do
     {
       merchant_uid: "xxxxx",
@@ -206,7 +191,7 @@ describe Iamport do
   end
 
   describe ".create_onetime_payment" do
-    it "creates onetime payments for customer" do
+    it "creates an onetime payment" do
       allow(Iamport).to receive(:token).and_return "NEW_TOKEN"
       one_time_url = "#{IAMPORT_HOST}/subscribe/payments/onetime"
 
@@ -217,16 +202,13 @@ describe Iamport do
         body: customer_payment_info,
       }
 
-      response = {
-        "response" => one_time_response,
-      }
-
-      expect(HTTParty).to receive(:post).with(one_time_url, expected_params).and_return(response)
+      expect(HTTParty).to receive(:post).with(one_time_url, expected_params)
+        .and_return(one_time_response)
       body = expected_params[:body]
       res = Iamport.create_onetime_payment(body)
 
-      expect(res["response"]["code"]).to eq(0)
-      expect(res["response"]["response"]["imp_uid"]).to eq(imp_uid)
+      expect(res["code"]).to eq(0)
+      expect(res["response"]["imp_uid"]).to eq(imp_uid)
     end
   end
 
@@ -246,22 +228,19 @@ describe Iamport do
         },
         body: payload,
       }
-      response = {
-        "response" => payment_again_response,
-      }
 
       expect(HTTParty).to receive(:post).with(payment_again_url, expected_params)
-        .and_return(response)
+        .and_return(payment_again_response)
       body = expected_params[:body]
       res = Iamport.create_payments_again(body)
 
-      expect(res["response"]["code"]).to eq(0)
-      expect(res["response"]["response"]["merchant_uid"]).to eq(merchant_uid)
+      expect(res["code"]).to eq(0)
+      expect(res["response"]["merchant_uid"]).to eq(merchant_uid)
     end
   end
 
   describe ".create_customer" do
-    it "creates new 'subscribe' customer" do
+    it "creates new subscriber" do
       allow(Iamport).to receive(:token).and_return "NEW_TOKEN"
       customer_url = "#{IAMPORT_HOST}/subscribe/customers/#{customer_uid}"
 
@@ -272,23 +251,20 @@ describe Iamport do
         body: customer_payment_info,
       }
 
-      response = {
-        "response" => customer_response,
-      }
-
       expect(HTTParty).to receive(:post).with(customer_url, expected_params)
-        .and_return(response)
+        .and_return(customer_response)
 
       body = expected_params[:body]
       res = Iamport.create_customer(customer_uid, body)
 
-      expect(res["response"]["code"]).to eq(0)
-      expect(res["response"]["response"]["customer_uid"]).to eq(customer_uid)
-      expect(res["response"]["response"]["customer_uid"]).to be_a_kind_of(String)
+      expect(res["code"]).to eq(0)
+      expect(res["response"]["customer_uid"]).to eq(customer_uid)
+      expect(res["response"]["customer_uid"]).to be_a_kind_of(String)
     end
   end
 
   describe ".get_customer" do
+    subject { Iamport.customer(customer_uid) }
     it "returns subscribe customer info" do
       allow(Iamport).to receive(:token).and_return "NEW_TOKEN"
       customer_url = "#{IAMPORT_HOST}/subscribe/customers/#{customer_uid}"
@@ -299,17 +275,12 @@ describe Iamport do
         body: {},
       }
 
-      response = {
-        "response" => customer_response,
-      }
-
       expect(HTTParty).to receive(:get).with(customer_url, expected_params)
-        .and_return(response)
-      res = Iamport.customer(customer_uid)
+        .and_return(customer_response)
 
-      expect(res["response"]["code"]).to eq(0)
-      expect(res["response"]["response"]["customer_uid"]).to eq(customer_uid)
-      expect(res["response"]["response"]["customer_uid"]).to be_a_kind_of(String)
+      expect(subject["code"]).to eq(0)
+      expect(subject["response"]["customer_uid"]).to eq(customer_uid)
+      expect(subject["response"]["customer_uid"]).to be_a_kind_of(String)
     end
   end
 
@@ -324,21 +295,32 @@ describe Iamport do
         body: {},
       }
 
-      response = {
-        "response" => customer_response,
-      }
-
       expect(HTTParty).to receive(:delete).with(delete_customer_url, expected_params)
-        .and_return(response)
+        .and_return(customer_response)
       res = Iamport.delete_customer(customer_uid)
 
-      expect(res["response"]["code"]).to eq(0)
-      expect(res["response"]["response"]["customer_uid"]).to eq(customer_uid)
-      expect(res["response"]["response"]["customer_uid"]).to be_a_kind_of(String)
+      expect(res["code"]).to eq(0)
+      expect(res["response"]["customer_uid"]).to eq(customer_uid)
+      expect(res["response"]["customer_uid"]).to be_a_kind_of(String)
     end
   end
 
   describe ".customer_payments" do
+    let(:customer_payment_response) do
+      {
+        "code" => 0,
+        "message" => "string",
+        "response" => {
+          "total" => 1,
+          "previous" => 0,
+          "next" => 0,
+          "list" => [
+            payment_json,
+          ],
+        },
+      }
+    end
+
     it "returns payments of customer" do
       allow(Iamport).to receive(:token).and_return "NEW_TOKEN"
       customer_payments_url =
@@ -351,19 +333,15 @@ describe Iamport do
         body: {},
       }
 
-      response = {
-        "response" => customer_payment_response,
-      }
-
       expect(HTTParty).to receive(:get).with(customer_payments_url, expected_params)
-        .and_return(response)
+        .and_return(customer_payment_response)
       res = Iamport.customer_payments(customer_uid)
 
-      expect(res["response"]["code"]).to eq(0)
-      expect(res["response"]["response"]["list"]).to be_a_kind_of(Array)
-      expect(res["response"]["response"]["total"]).to eq(1)
-      expect(res["response"]["response"]["list"].first["merchant_uid"]).to eq(merchant_uid)
-      expect(res["response"]["response"]["list"].first["imp_uid"]).to eq(imp_uid)
+      expect(res["code"]).to eq(0)
+      expect(res["response"]["list"]).to be_a_kind_of(Array)
+      expect(res["response"]["total"]).to eq(1)
+      expect(res["response"]["list"].first["merchant_uid"]).to eq(merchant_uid)
+      expect(res["response"]["list"].first["imp_uid"]).to eq(imp_uid)
     end
   end
 

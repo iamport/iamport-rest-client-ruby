@@ -78,7 +78,7 @@ module Iamport
       uri = "subscribe/payments/again"
       pay_post(uri, payload)
     end
-    
+
     { customer: :get, delete_customer: :delete }.each do |method_name, type|
       define_method(method_name) do |customer_uid|
         uri = "subscribe/customers/#{customer_uid}"
