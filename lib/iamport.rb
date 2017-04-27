@@ -1,7 +1,7 @@
 require "iamport/version"
 
 module Iamport
-  IAMPORT_HOST = "https://api.iamport.kr"
+  IAMPORT_HOST = "https://api.iamport.kr".freeze
 
   class Config
     attr_accessor :api_key
@@ -26,7 +26,7 @@ module Iamport
           imp_secret: config.api_secret
       }
 
-      result = HTTParty.post url, body: body
+      result = Faraday.post url, body: body
       result["response"]["access_token"]
     end
 
@@ -77,14 +77,14 @@ module Iamport
     def pay_get(uri, payload = {})
       url = "#{IAMPORT_HOST}/#{uri}"
 
-      HTTParty.get url, headers: get_headers, body: payload
+      Faraday.get(url, headers: get_headers, body: payload)['response']
     end
 
     # POST
     def pay_post(uri, payload = {})
       url = "#{IAMPORT_HOST}/#{uri}"
 
-      HTTParty.post url, headers: get_headers, body: payload
+      Faraday.post(url, headers: get_headers, body: payload)['response']
     end
   end
 end
