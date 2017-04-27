@@ -1,5 +1,5 @@
 require 'spec_helper'
-require 'httparty'
+require 'faraday'
 
 describe Iamport, "::VERSION" do
   it 'has a version number' do
@@ -44,7 +44,7 @@ describe Iamport do
         }
       }
 
-      expect(HTTParty).to receive(:post).with(expected_url, expected_params).and_return(response)
+      expect(Faraday).to receive(:post).with(expected_url, expected_params).and_return(response)
 
       expect(Iamport.token).to eq("NEW_TOKEN")
     end
@@ -100,7 +100,7 @@ describe Iamport do
         "response" => payment_json,
       }
 
-      expect(HTTParty).to receive(:get).with(expected_url, expected_params).and_return(response)
+      expect(Faraday).to receive(:get).with(expected_url, expected_params).and_return(response)
 
       res = Iamport.payment("IMP_UID")
       expect(res["imp_uid"]).to eq("IMP_UID")
@@ -131,7 +131,7 @@ describe Iamport do
         }
       }
 
-      expect(HTTParty).to receive(:get).with(expected_url, expected_params).and_return(response)
+      expect(Faraday).to receive(:get).with(expected_url, expected_params).and_return(response)
 
       res = Iamport.payments
       expect(res["total"]).to eq(150)
@@ -163,7 +163,7 @@ describe Iamport do
           }
       }
 
-      expect(HTTParty).to receive(:post).with(expected_url, expected_params).and_return(response)
+      expect(Faraday).to receive(:post).with(expected_url, expected_params).and_return(response)
 
       body = expected_params[:body]
 
@@ -189,7 +189,7 @@ describe Iamport do
           "response" => payment_json
       }
 
-      expect(HTTParty).to receive(:get).with(expected_url, expected_params).and_return(response)
+      expect(Faraday).to receive(:get).with(expected_url, expected_params).and_return(response)
 
       res = Iamport.find("M00001")
       expect(res["merchant_uid"]).to eq("M00001")
@@ -197,4 +197,3 @@ describe Iamport do
     end
   end
 end
-
