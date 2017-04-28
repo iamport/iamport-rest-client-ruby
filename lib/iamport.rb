@@ -74,7 +74,7 @@ module Iamport
       pay_post(uri, payload)
     end
 
-    def create_payments_again(payload = {})
+    def create_payment_again(payload = {})
       uri = "subscribe/payments/again"
       pay_post(uri, payload)
     end

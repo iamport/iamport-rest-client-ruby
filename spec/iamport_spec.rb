@@ -92,14 +92,6 @@ describe Iamport do
 
   let(:customer_uid) { "8" }
 
-  let(:one_time_response) do
-    {
-      "code" => 0,
-      "message" => "string",
-      "response" => payment_json,
-    }
-  end
-
   let(:customer_response) do
     {
       "code" => 0,
@@ -115,14 +107,6 @@ describe Iamport do
         "inserted" => 0,
         "updated" => 0,
       },
-    }
-  end
-
-  let(:payment_again_response) do
-    {
-      "code" => 0,
-      "message" => "string",
-      "response" => payment_json,
     }
   end
 
@@ -191,6 +175,14 @@ describe Iamport do
   end
 
   describe ".create_onetime_payment" do
+    let(:one_time_response) do
+      {
+        "code" => 0,
+        "message" => "string",
+        "response" => payment_json,
+      }
+    end
+
     it "creates an onetime payment" do
       allow(Iamport).to receive(:token).and_return "NEW_TOKEN"
       one_time_url = "#{IAMPORT_HOST}/subscribe/payments/onetime"
@@ -212,7 +204,15 @@ describe Iamport do
     end
   end
 
-  describe ".create_payments_again" do
+  describe ".create_payment_again" do
+    let(:payment_again_response) do
+      {
+        "code" => 0,
+        "message" => "string",
+        "response" => payment_json,
+      }
+    end
+
     it "creates payment again for customer" do
       allow(Iamport).to receive(:token).and_return "NEW_TOKEN"
       payment_again_url = "#{IAMPORT_HOST}/subscribe/payments/again"
@@ -232,7 +232,7 @@ describe Iamport do
       expect(HTTParty).to receive(:post).with(payment_again_url, expected_params)
         .and_return(payment_again_response)
       body = expected_params[:body]
-      res = Iamport.create_payments_again(body)
+      res = Iamport.create_payment_again(body)
 
       expect(res["code"]).to eq(0)
       expect(res["response"]["merchant_uid"]).to eq(merchant_uid)
@@ -263,8 +263,7 @@ describe Iamport do
     end
   end
 
-  describe ".get_customer" do
-    subject { Iamport.customer(customer_uid) }
+  describe ".customer" do
     it "returns subscribe customer info" do
       allow(Iamport).to receive(:token).and_return "NEW_TOKEN"
       customer_url = "#{IAMPORT_HOST}/subscribe/customers/#{customer_uid}"
@@ -278,9 +277,11 @@ describe Iamport do
       expect(HTTParty).to receive(:get).with(customer_url, expected_params)
         .and_return(customer_response)
 
-      expect(subject["code"]).to eq(0)
-      expect(subject["response"]["customer_uid"]).to eq(customer_uid)
-      expect(subject["response"]["customer_uid"]).to be_a_kind_of(String)
+      res = Iamport.customer(customer_uid)
+
+      expect(res["code"]).to eq(0)
+      expect(res["response"]["customer_uid"]).to eq(customer_uid)
+      expect(res["response"]["customer_uid"]).to be_a_kind_of(String)
     end
   end
 
