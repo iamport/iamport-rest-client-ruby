@@ -196,5 +196,43 @@ describe Iamport do
       expect(res["imp_uid"]).to eq("IMP_UID")
     end
   end
+
+  describe 'create_subscribe_customer' do
+    it 'must return customer subscription info' do
+      allow(Iamport).to receive(:token).and_return 'NEW_TOKEN'
+
+      customer_uid = "your_customer_1234"
+      expected_url = "#{IAMPORT_HOST}/subscribe/customers/#{customer_uid}"
+      expected_params = {
+        headers: {
+          "Authorization" => "NEW_TOKEN"
+        },
+        body: {
+          card_number: "1234-1234-1234-1234",
+          expiry: "2019-07",
+          birth: "801234",
+          pwd_2digit: "00",
+          customer_email: "user@your_customer.com",
+          customer_name: "홍길동",
+          customer_tel: "010-1234-5678"
+        }
+      }
+
+      response = {
+        "code"=>-1,
+        "message"=>"카드정보 인증 및 빌키 발급에 실패하였습니다. [F112]유효하지않은 카드번호를 입력하셨습니다. (card_bin 없음)",
+        "response"=>nil
+      }
+
+      expect(HTTParty).to receive(:post).with(expected_url, expected_params).and_return(response)
+
+      body = expected_params[:body]
+
+      res = Iamport.create_subscribe_customer(customer_uid, body)
+      expect(res["code"]).to eq(response["code"])
+      expect(res["message"]).to eq(response["message"])
+      expect(res["response"]).to eq(response["response"])
+    end
+  end
 end
 

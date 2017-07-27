@@ -3,7 +3,8 @@
 Ruby 사용자를 위한 아임포트 REST API 연동 모듈입니다.
 
 # 세팅하는 방법
-```
+
+```ruby
 Iamport.configure do |config|
   config.api_key = "API_KEY"
   config.api_secret = "API_SECRET"
@@ -12,17 +13,20 @@ end
 
 # 사용법
 ## token API
-```
+
+```ruby
 Iamport.token
 ```
 
 ## payment API
-```
+
+```ruby
 Iamport.payment("IMP_UID")
 ```
 
 ## payments API
-```
+
+```ruby
 Iamport.payments
 Iamport.payments(status: "paid")
 Iamport.payments(status: "paid", page: 2)
@@ -30,7 +34,8 @@ Iamport.payments(status: "paid", page: 2)
 
 ## cancel API
 body의 값은 [API 문서 - cancel](https://api.iamport.kr/#!/payments/cancelPayment)에 있는 사용하는 것을 추가하여 진행하면 됩니다.​
-```
+
+```ruby
 body = {
   imp_uid: "IMP_UID",
   merchant_uid: "M00001",
@@ -42,8 +47,55 @@ Iamport.cancel(body)
 ## find API
 가맹점지정 고유번호를 이용하여 결제정보를 찾는 API
 
-```
+```ruby
 Iamport.find("M00001")
+```
+
+## subscribe_customer API
+카드정보를 카드사에 요청하여 빌링키를 발급하는 API
+
+##### 빌링키 발급/변경 요청 예시
+
+```ruby
+Iamport.create_subscribe_customer("your_customer_1234", {
+  card_number: "1234-1234-1234-1234",
+  expiry: "2019-07",
+  birth: "801234",
+  pwd_2digit: "00",
+  customer_email: "user@your_customer.com",
+  customer_name: "홍길동",
+  customer_tel: "010-1234-5678"
+})
+```
+
+&#8251; *필수 항목 : `card_number`, `expiry`, `birth`, `pwd_2digit`*<br />
+&#8251; *법인카드의 경우 `pwd_2digit` 항목 생략가능*
+
+##### 빌링키 발급/변경 성공시 Response
+
+```ruby
+{"code"=>0,
+ "message"=>nil,
+ "response"=>
+  {"card_name"=>"현대카드",
+   "customer_addr"=>nil,
+   "customer_email"=>"user@your_customer.com",
+   "customer_name"=>"홍길동",
+   "customer_postcode"=>nil,
+   "customer_tel"=>"010-1234-5678",
+   "customer_uid"=>"your_customer_1234",
+   "inserted"=>1487921135,
+   "updated"=>1487921513}}
+```
+
+&#8251; *`inserted`의 값과 `updated`의 값이 같은 경우 신규 발급, 다른 경우 변경을 의미함.*
+
+##### 빌링키 발급/변경 실패시 Response
+
+```ruby
+{"code"=>-1,
+ "message"=>"카드정보 인증 및 빌키 발급에 실패하였습니다. [F112]유효하지않은 카드번호를 입력하셨습니다. (card_bin 없음)",
+ "response"=>nil}
 ```
 
 ## Installation
@@ -51,16 +103,21 @@ Iamport.find("M00001")
 Add this line to your application's Gemfile:
 
 ```ruby
+gem 'httparty'
 gem 'iamport', github: 'iamport/iamport-rest-client-ruby'
 ```
 
 And then execute:
 
-    $ bundle
+```shell
+$ bundle
+```
 
 Or install it yourself as:
 
-    $ gem install iamport
+```shell
+$ gem install iamport
+```
 
 ## Usage
 

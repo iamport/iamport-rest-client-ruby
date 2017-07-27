@@ -35,7 +35,7 @@ module Iamport
     def payment(imp_uid)
       uri = "payments/#{imp_uid}"
 
-      pay_get(uri)
+      _get(uri)
     end
 
     # Search payment information using status.
@@ -47,7 +47,7 @@ module Iamport
 
       uri = "payments/status/#{status}?page=#{page}"
 
-      pay_get(uri)
+      _get(uri)
     end
 
     # Find payment information using merchant uid
@@ -55,7 +55,7 @@ module Iamport
     def find(merchant_uid)
       uri = "payments/find/#{merchant_uid}"
 
-      pay_get(uri)
+      _get(uri)
     end
 
     # Canceled payments
@@ -63,7 +63,31 @@ module Iamport
     def cancel(body)
       uri = "payments/cancel"
 
-      pay_post(uri, body)
+      _post(uri, body)
+    end
+
+    # Get a billing key by customer_uid
+    # GET https://api.iamport.kr/#!/subscribe/customers/:customer_uid
+    def find_subscribe_customer(customer_uid)
+      uri = "subscribe/customers/#{customer_uid}"
+
+      _get(uri)
+    end
+    
+    # Create (or update if exists) a billing key by customer_uid
+    # POST https://api.iamport.kr/#!/subscribe/customers/:customer_uid
+    def create_subscribe_customer(customer_uid, body)
+      uri = "subscribe/customers/#{customer_uid}"
+
+      _post(uri, body)
+    end
+
+    # Delete a billing key by customer_uid
+    # DELETE https://api.iamport.kr/#!/subscribe/customers/:customer_uid
+    def delete_subscribe_customer(customer_uid)
+      uri = "subscribe/customers/#{customer_uid}"
+
+      _delete(uri)
     end
 
     private
@@ -74,17 +98,25 @@ module Iamport
     end
 
     # GET
-    def pay_get(uri, payload = {})
+    def _get(uri, payload = {})
       url = "#{IAMPORT_HOST}/#{uri}"
 
       HTTParty.get url, headers: get_headers, body: payload
     end
 
     # POST
-    def pay_post(uri, payload = {})
+    def _post(uri, payload = {})
       url = "#{IAMPORT_HOST}/#{uri}"
 
       HTTParty.post url, headers: get_headers, body: payload
     end
+
+    # DELETE
+    def _delete(uri, payload = {})
+      url = "#{IAMPORT_HOST}/#{uri}"
+
+      HTTParty.delete url, headers: get_headers, body: payload
+    end
+
   end
 end
