@@ -103,7 +103,7 @@ describe Iamport do
       expect(HTTParty).to receive(:get).with(expected_url, expected_params).and_return(response)
 
       res = Iamport.payment("IMP_UID")
-      expect(res["imp_uid"]).to eq("IMP_UID")
+      expect(res["response"]["imp_uid"]).to eq("IMP_UID")
     end
   end
 
@@ -134,8 +134,8 @@ describe Iamport do
       expect(HTTParty).to receive(:get).with(expected_url, expected_params).and_return(response)
 
       res = Iamport.payments
-      expect(res["total"]).to eq(150)
-      expect(res["list"].size).to eq(2)
+      expect(res["response"]["total"]).to eq(150)
+      expect(res["response"]["list"].size).to eq(2)
     end
   end
 
@@ -168,8 +168,8 @@ describe Iamport do
       body = expected_params[:body]
 
       res = Iamport.cancel(body)
-      expect(res["imp_uid"]).to eq("IMP_UID")
-      expect(res["merchant_uid"]).to eq("M00001")
+      expect(res["response"]["imp_uid"]).to eq("IMP_UID")
+      expect(res["response"]["merchant_uid"]).to eq("M00001")
     end
   end
 
@@ -192,8 +192,8 @@ describe Iamport do
       expect(HTTParty).to receive(:get).with(expected_url, expected_params).and_return(response)
 
       res = Iamport.find("M00001")
-      expect(res["merchant_uid"]).to eq("M00001")
-      expect(res["imp_uid"]).to eq("IMP_UID")
+      expect(res["response"]["merchant_uid"]).to eq("M00001")
+      expect(res["response"]["imp_uid"]).to eq("IMP_UID")
     end
   end
 
