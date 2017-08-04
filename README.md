@@ -104,7 +104,7 @@ Add this line to your application's Gemfile:
 
 ```ruby
 gem 'httparty'
-gem 'iamport', github: 'iamport/iamport-rest-client-ruby'
+gem 'iamport'
 ```
 
 And then execute:
