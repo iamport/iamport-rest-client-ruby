@@ -2,6 +2,10 @@
 
 Ruby 사용자를 위한 아임포트 REST API 연동 모듈입니다.
 
+## Code Status
+
+[![Build Status](https://travis-ci.org/iamport/iamport-rest-client-ruby.svg?branch=master)](https://travis-ci.org/iamport/iamport-rest-client-ruby)
+
 # 세팅하는 방법
 
 ```ruby
