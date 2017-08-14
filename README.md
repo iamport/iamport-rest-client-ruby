@@ -1,6 +1,6 @@
 # Iamport for Stripes.co.kr
 
-Ruby 사용자를 위한 아임포트 REST API 연동 모듈입니다. (Stripe.co.kr 전용)
+Ruby 사용자를 위한 아임포트 REST API 연동 모듈입니다. (0.2.2 버전에서 stripes 에서 수정하였습니다. )
 
 ## Code Status
 
@@ -133,6 +133,10 @@ After checking out the repo, run `bin/setup` to install dependencies. Then, run 
 
 To install this gem onto your local machine, run `bundle exec rake install`. To release a new version, update the version number in `version.rb`, and then run `bundle exec rake release`, which will create a git tag for the version, push git commits and tags, and push the `.gem` file to [rubygems.org](https://rubygems.org).
 
+## Test
+Copy and paste cards.yml.example, import_key.yml.example to cards.yml, import_key.yml respectively.
+
+Put your own card information and api_key information and run test 
 ## Contributing
 
 Bug reports and pull requests are welcome on GitHub at https://github.com/[USERNAME]/iamport. This project is intended to be a safe, welcoming space for collaboration, and contributors are expected to adhere to the [Contributor Covenant](contributor-covenant.org) code of conduct.
