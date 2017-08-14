@@ -201,8 +201,8 @@ describe Iamport do
     end
   end
 
-  describe 'create_subscribe_customer/create_subscribe_payments_again' do
-    it 'must return customer subscription info' do
+  describe '[create|find|delete]_subscribe_customer' do
+    it 'must return customer subscription info [test from Iamport]' do
       allow(Iamport).to receive(:token).and_return 'NEW_TOKEN'
 
       customer_uid = "your_customer_1234"
@@ -242,7 +242,7 @@ describe Iamport do
       cards = YAML::load(File.open('cards.yml'))
       card = cards['yjchoi']
       body = {
-          card_number: card['card_number'], #s['yjchoi']['card_number']"5387-2082-0985-1295",
+          card_number: card['card_number'],
           expiry: card['expiry'],
           birth: card['birth'],
           pwd_2digit: card['pwd_2digit'].to_s,
@@ -253,15 +253,88 @@ describe Iamport do
 
       # 1. Iamport.create_subscribe_customer
       res = Iamport.create_subscribe_customer(customer_uid, body)
-      p(res['message'])
       expect(res["code"]).to eq(0)
       expect(res["message"]).to be_nil
       expect(res["response"]['customer_uid']).to eq(customer_uid)
       expect(res["response"]['customer_email']).to eq(body[:customer_email])
       expect(res["response"]['customer_name']).to eq(body[:customer_name])
       expect(res["response"]['customer_tel']).to eq(body[:customer_tel])
-    end
 
+      res = Iamport.find_subscribe_customer(customer_uid)
+      expect(res["code"]).to eq(0)
+      expect(res["message"]).to be_nil
+      expect(res["response"]['customer_uid']).to eq(customer_uid)
+      expect(res["response"]['customer_email']).to eq(body[:customer_email])
+      expect(res["response"]['customer_name']).to eq(body[:customer_name])
+      expect(res["response"]['customer_tel']).to eq(body[:customer_tel])
+
+      res = Iamport.delete_subscribe_customer(customer_uid)
+      expect(res["code"]).to eq(0)
+      expect(res["message"]).to be_nil
+      expect(res["response"]['customer_uid']).to eq(customer_uid)
+      expect(res["response"]['customer_email']).to eq(body[:customer_email])
+      expect(res["response"]['customer_name']).to eq(body[:customer_name])
+      expect(res["response"]['customer_tel']).to eq(body[:customer_tel])
+
+      res = Iamport.delete_subscribe_customer(customer_uid)
+      expect(res['code']).to eq(1)
+      expect(res['message']).to match(customer_uid)
+      expect(res['response']).to be_nil
+    end
+  end
+
+  describe 'create_subscribe_payments_again/payments_cancel' do
+    # required fields
+    let(:customer_uid) { 'your_customer_1234' }
+    let(:merchant_uid) { 'test' + SecureRandom.base64(8) }
+    let(:amount) { 1004 }
+    let(:name) { 'TEST 주문 ' + Time.now.to_s }
+
+    before 'it creates subscribe customer' do
+      cards = YAML::load(File.open('cards.yml'))
+      card = cards['yjchoi']
+      body = {
+          card_number: card['card_number'],
+          expiry: card['expiry'],
+          birth: card['birth'],
+          pwd_2digit: card['pwd_2digit'].to_s,
+          customer_email: card['customer_email'],
+          customer_name: card['customer_name'],
+          customer_tel: card['customer_tel']
+      }
+
+      # 1. Iamport.create_subscribe_customer
+      res = Iamport.create_subscribe_customer(customer_uid, body)
+      expect(res['code']).to eq(0)
+    end
+    it 'must create payments and cancel it' do
+      # 1. 결제 신청
+      res = Iamport.create_subscribe_payments_again(customer_uid, merchant_uid, amount, name, buyer_name: 'TEST_NAME', buyer_tel: 'TEST_TEL')
+
+      expect(res['code']).to eq(0)
+      expect(res['response']['imp_uid']).not_to be_nil
+      expect(res['response']['merchant_uid']).to eq(merchant_uid)
+      expect(res['response']['amount']).to eq(amount)
+      expect(res['response']['name']).to eq(name)
+      expect(res['response']['buyer_name']).to eq('TEST_NAME')
+      expect(res['response']['buyer_tel']).to eq('TEST_TEL')
+
+      imp_uid = res['response']['imp_uid']
+
+      # 2. 결제 조회
+      res = Iamport.payment(imp_uid)
+      expect(res['code']).to eq(0)
+      expect(res['response']['imp_uid']).not_to be_nil
+      expect(res['response']['merchant_uid']).to eq(merchant_uid)
+      expect(res['response']['amount']).to eq(amount)
+      expect(res['response']['name']).to eq(name)
+      expect(res['response']['buyer_name']).to eq('TEST_NAME')
+      expect(res['response']['buyer_tel']).to eq('TEST_TEL')
+
+      # 3. 결제 취소
+      res = Iamport.cancel(imp_uid: imp_uid)
+      expect(res['response']['status']).to eq('cancelled')
+    end
   end
 end
 

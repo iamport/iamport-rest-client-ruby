@@ -91,6 +91,18 @@ module Iamport
       _delete(uri)
     end
 
+    # Create payment of customer_uid
+    # POST https://api.iamport.kr/#!/subscribe/payments/again
+    def create_subscribe_payments_again(customer_uid, merchant_uid, amount, name, options)
+      uri = "subscribe/payments/again"
+
+      options ||= {}
+      body = options.merge!(customer_uid: customer_uid, merchant_uid: merchant_uid, amount: amount, name: name)
+
+      _post(uri, body)
+    end
+
+
     private
 
     # Get header data
