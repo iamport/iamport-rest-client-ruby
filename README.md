@@ -1,6 +1,6 @@
-# Iamport
+# Iamport for Stripes.co.kr
 
-Ruby 사용자를 위한 아임포트 REST API 연동 모듈입니다.
+Ruby 사용자를 위한 아임포트 REST API 연동 모듈입니다. (Stripe.co.kr 전용)
 
 ## Code Status
 

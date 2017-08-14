@@ -22,9 +22,13 @@ describe Iamport do
   IAMPORT_HOST = "https://api.iamport.kr"
 
   before do
+    y = YAML::load(File.open('iamport_key.yml'))
+    @api_key = y['api_key']
+    @api_secret = y['api_secret']
+
     Iamport.configure do |config|
-      config.api_key = "API_KEY"
-      config.api_secret = "API_SECRET"
+      config.api_key = @api_key
+      config.api_secret = @api_secret
     end
   end
 
@@ -33,8 +37,8 @@ describe Iamport do
       expected_url = "#{IAMPORT_HOST}/users/getToken"
       expected_params = {
         body: {
-         imp_key: "API_KEY",
-         imp_secret: "API_SECRET",
+         imp_key: @api_key,
+         imp_secret: @api_secret,
         }
       }
 
@@ -197,31 +201,31 @@ describe Iamport do
     end
   end
 
-  describe 'create_subscribe_customer' do
+  describe 'create_subscribe_customer/create_subscribe_payments_again' do
     it 'must return customer subscription info' do
       allow(Iamport).to receive(:token).and_return 'NEW_TOKEN'
 
       customer_uid = "your_customer_1234"
       expected_url = "#{IAMPORT_HOST}/subscribe/customers/#{customer_uid}"
       expected_params = {
-        headers: {
-          "Authorization" => "NEW_TOKEN"
-        },
-        body: {
-          card_number: "1234-1234-1234-1234",
-          expiry: "2019-07",
-          birth: "801234",
-          pwd_2digit: "00",
-          customer_email: "user@your_customer.com",
-          customer_name: "홍길동",
-          customer_tel: "010-1234-5678"
-        }
+          headers: {
+              "Authorization" => "NEW_TOKEN"
+          },
+          body: {
+              card_number: "1234-1234-1234-1234",
+              expiry: "2019-07",
+              birth: "801234",
+              pwd_2digit: "00",
+              customer_email: "user@your_customer.com",
+              customer_name: "홍길동",
+              customer_tel: "010-1234-5678"
+          }
       }
 
       response = {
-        "code"=>-1,
-        "message"=>"카드정보 인증 및 빌키 발급에 실패하였습니다. [F112]유효하지않은 카드번호를 입력하셨습니다. (card_bin 없음)",
-        "response"=>nil
+          "code"=>-1,
+          "message"=>"카드정보 인증 및 빌키 발급에 실패하였습니다. [F112]유효하지않은 카드번호를 입력하셨습니다. (card_bin 없음)",
+          "response"=>nil
       }
 
       expect(HTTParty).to receive(:post).with(expected_url, expected_params).and_return(response)
@@ -233,6 +237,31 @@ describe Iamport do
       expect(res["message"]).to eq(response["message"])
       expect(res["response"]).to eq(response["response"])
     end
+    it 'must return customer subscription info - yjchoi card info(BC카드, 우리카드)' do
+      customer_uid = "your_customer_1234"
+      cards = YAML::load(File.open('cards.yml'))
+      card = cards['yjchoi']
+      body = {
+          card_number: card['card_number'], #s['yjchoi']['card_number']"5387-2082-0985-1295",
+          expiry: card['expiry'],
+          birth: card['birth'],
+          pwd_2digit: card['pwd_2digit'].to_s,
+          customer_email: card['customer_email'],
+          customer_name: card['customer_name'],
+          customer_tel: card['customer_tel']
+      }
+
+      # 1. Iamport.create_subscribe_customer
+      res = Iamport.create_subscribe_customer(customer_uid, body)
+      p(res['message'])
+      expect(res["code"]).to eq(0)
+      expect(res["message"]).to be_nil
+      expect(res["response"]['customer_uid']).to eq(customer_uid)
+      expect(res["response"]['customer_email']).to eq(body[:customer_email])
+      expect(res["response"]['customer_name']).to eq(body[:customer_name])
+      expect(res["response"]['customer_tel']).to eq(body[:customer_tel])
+    end
+
   end
 end
 

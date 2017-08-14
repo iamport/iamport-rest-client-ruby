@@ -9,3 +9,5 @@
 /tmp/
 # Ignore RubyMine setting files
 .idea/
+cards.yml
+iamport_key.yml
