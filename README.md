@@ -36,6 +36,18 @@ Iamport.payments(status: "paid")
 Iamport.payments(status: "paid", page: 2)
 ```
 
+## payments.validation API
+
+##### 결제예정금액을 사전등록
+```ruby
+Iamport.prepare(merchant_uid: "M00001", amount: 10000)
+```
+
+##### 사전등록된 결제정보를 조회
+```ruby
+Iamport.prepared(merchant_uid: "M00001")
+```
+
 ## cancel API
 body의 값은 [API 문서 - cancel](https://api.iamport.kr/#!/payments/cancelPayment)에 있는 사용하는 것을 추가하여 진행하면 됩니다.​
 

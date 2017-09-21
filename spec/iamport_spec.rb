@@ -139,6 +139,69 @@ describe Iamport do
     end
   end
 
+  describe 'prepare' do
+    it 'return prepared info' do
+      allow(Iamport).to receive(:token).and_return 'NEW_TOKEN'
+
+      expected_url = "#{IAMPORT_HOST}/payments/prepare"
+      expected_params = {
+          headers: {
+              "Authorization" => "NEW_TOKEN"
+          },
+          body: {
+              "merchant_uid" => "M00001",
+              "amount" => 10000,
+          }
+      }
+
+      response = {
+          "code" => 0,
+          "message" => '',
+          "response" => {
+              "merchant_uid" => "M00001",
+              "amount" => 10000,
+          }
+      }
+
+      expect(HTTParty).to receive(:post).with(expected_url, expected_params).and_return(response)
+
+      body = expected_params[:body]
+
+      res = Iamport.prepare(body)
+      expect(res["response"]["merchant_uid"]).to eq("M00001")
+      expect(res["response"]["amount"]).to eq(10000)
+    end
+  end
+
+  describe 'prepared' do
+    it 'return prepared info' do
+      allow(Iamport).to receive(:token).and_return 'NEW_TOKEN'
+
+      expected_url = "#{IAMPORT_HOST}/payments/prepare/M00001"
+      expected_params = {
+          headers: {
+              "Authorization" => "NEW_TOKEN"
+          },
+          body: {}
+      }
+
+      response = {
+          "code" => 0,
+          "message" => '',
+          "response" => {
+              "merchant_uid" => "M00001",
+              "amount" => 10000,
+          }
+      }
+
+      expect(HTTParty).to receive(:get).with(expected_url, expected_params).and_return(response)
+
+      res = Iamport.prepared("M00001")
+      expect(res["response"]["merchant_uid"]).to eq("M00001")
+      expect(res["response"]["amount"]).to eq(10000)
+    end
+  end
+
   describe 'cancel' do
     it 'return cancel info' do
       allow(Iamport).to receive(:token).and_return 'NEW_TOKEN'
