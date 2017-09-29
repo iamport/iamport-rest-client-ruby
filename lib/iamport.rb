@@ -106,6 +106,12 @@ module Iamport
 
       _delete(uri)
     end
+    
+    def again_subscribe_payment(body)
+      uri = "subscribe/payments/again"
+
+      _post(uri, body)
+    end
 
     private
 
