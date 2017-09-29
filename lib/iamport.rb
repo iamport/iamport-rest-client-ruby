@@ -59,6 +59,22 @@ module Iamport
       _get(uri)
     end
 
+    # Prepare payment validation
+    # https://api.iamport.kr/#!/payments/prepare
+    def prepare(body)
+      uri = "payments/prepare"
+
+      _post(uri, body)
+    end
+
+    # Get prepared payment information by merchant_uid
+    # https://api.iamport.kr/#!/payments/prepare/:merchant_uid
+    def prepared(merchant_uid)
+      uri = "payments/prepare/#{merchant_uid}"
+
+      _get(uri)
+    end
+
     # Canceled payments
     # https://api.iamport.kr/#!/payments/cancelPayment
     def cancel(body)
