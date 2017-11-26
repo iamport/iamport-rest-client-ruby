@@ -102,6 +102,21 @@ Iamport.create_subscribe_customer("your_customer_1234", {
  "response"=>nil}
 ```
 
+##### 결제 정보 조회
+정상결제 
+```
+Iamport.payment_status(imp_uid) ==> 'paid'
+```
+취소된결제
+```
+Iamport.payment_status(imp_uid) ==> 'cancelled'
+```
+존재하지 않는 imp_uid
+```
+Iamport.payment_status(imp_uid) ==> '존재하지 않는 결제정보입니다.'
+```
+
+
 ## Installation
 
 Add this line to your application's Gemfile:

@@ -101,7 +101,7 @@ describe Iamport do
       }
 
       response = {
-        "response" => payment_json,
+        "response" => payment_json
       }
 
       expect(HTTParty).to receive(:get).with(expected_url, expected_params).and_return(response)
@@ -331,9 +331,18 @@ describe Iamport do
       expect(res['response']['buyer_name']).to eq('TEST_NAME')
       expect(res['response']['buyer_tel']).to eq('TEST_TEL')
 
+      # 2-1. payment status - 정상결제
+      expect(Iamport.payment_status(imp_uid)).to eq 'paid'
+
       # 3. 결제 취소
       res = Iamport.cancel(imp_uid: imp_uid)
       expect(res['response']['status']).to eq('cancelled')
+
+      # 3-1. payment status - 취소된결제
+      expect(Iamport.payment_status(imp_uid)).to eq 'cancelled'
+
+      # 4. non existing imp_uid
+      expect(Iamport.payment_status('non_existing_imp_uid')).to eq '존재하지 않는 결제정보입니다.'
     end
   end
 end

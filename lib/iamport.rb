@@ -102,6 +102,16 @@ module Iamport
       _post(uri, body)
     end
 
+    def payment_status(imp_uid)
+      res = JSON.parse(payment(imp_uid).body) || {}
+      if res['code'] == 0
+        res['response']['status']
+      else
+        res['message']
+      end
+    end
+
+
 
     private
 
