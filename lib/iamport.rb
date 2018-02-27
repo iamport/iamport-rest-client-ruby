@@ -113,6 +113,12 @@ module Iamport
       _post(uri, body)
     end
 
+    def create_vbank(body)
+      uri = "/vbanks"
+
+      _post(uri, body)
+    end
+
     private
 
     # Get header data
