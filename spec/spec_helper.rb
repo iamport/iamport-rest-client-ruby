@@ -1,5 +1,6 @@
-$LOAD_PATH.unshift File.expand_path('../../lib', __FILE__)
-require 'iamport'
+$LOAD_PATH.unshift File.expand_path("../../lib", __FILE__)
+require "iamport"
+require "pry"
 
 RSpec.configure do |c|
   c.before(:example) do
