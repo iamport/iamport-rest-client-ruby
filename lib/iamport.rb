@@ -129,16 +129,10 @@ module Iamport
       pay_get(uri)
     end
     
-    def again_subscribe_payment(body)
-      uri = "subscribe/payments/again"
-
-      _post(uri, body)
-    end
-
     def create_vbank(body)
       uri = "/vbanks"
 
-      _post(uri, body)
+      pay_post(uri, body)
     end
 
     private
