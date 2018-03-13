@@ -138,7 +138,7 @@ module Iamport
     def delete_vbank(imp_uid)
       uri = "vbanks/#{imp_uid}"
       
-      pay_delete(uri, body)
+      pay_delete(uri)
     end
 
     private
