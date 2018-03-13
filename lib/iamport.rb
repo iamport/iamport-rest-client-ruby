@@ -134,6 +134,12 @@ module Iamport
 
       pay_post(uri, body)
     end
+    
+    def delete_vbank(imp_uid)
+      uri = "vbanks/#{imp_uid}"
+      
+      pay_delete(uri, body)
+    end
 
     private
 
