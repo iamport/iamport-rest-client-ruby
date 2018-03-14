@@ -147,7 +147,7 @@ module Iamport
 
       uri = "vbanks/holder?bank_code=#{bank_code}&bank_num=#{bank_num}"
       
-      pay_get(uri, payload)
+      pay_get(uri)
     end
 
     private
