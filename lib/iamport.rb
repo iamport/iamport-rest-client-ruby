@@ -140,6 +140,12 @@ module Iamport
       
       pay_delete(uri)
     end
+    
+    def check_holder(payload = {})
+      uri = "vbanks/holder"
+      
+      pay_get(uri, payload)
+    end
 
     private
 
