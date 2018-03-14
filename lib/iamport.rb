@@ -141,8 +141,11 @@ module Iamport
       pay_delete(uri)
     end
     
-    def check_holder(payload = {})
-      uri = "vbanks/holder"
+    def check_holder(options = {})
+      bank_code = options[:bank_code]
+      bank_num = options[:bank_num]
+
+      uri = "vbanks/holder?bank_code=#{bank_code}&bank_num=#{bank_num}"
       
       pay_get(uri, payload)
     end
