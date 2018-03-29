@@ -67,6 +67,14 @@ module Iamport
       _post(uri, body)
     end
 
+    # create onetime
+    # POST https://api.iamport.kr/#!/subscribe/payments/onetime
+    def create_onetime_payment(payload = {})
+      uri = "subscribe/payments/onetime"
+
+      pay_post(uri, payload)
+    end
+
     # Get a billing key by customer_uid
     # GET https://api.iamport.kr/#!/subscribe/customers/:customer_uid
     def find_subscribe_customer(customer_uid)
