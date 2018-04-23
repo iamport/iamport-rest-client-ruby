@@ -149,6 +149,12 @@ module Iamport
       
       pay_get(uri)
     end
+    
+    def create_receipt(imp_uid)
+      uri = "receipts/#{imp_uid}"
+      
+      pay_post(uri)
+    end
 
     private
 
