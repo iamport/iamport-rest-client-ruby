@@ -47,8 +47,12 @@ module Iamport
     def payments(options = {})
       status = options[:status] || "all"
       page = options[:page] || 1
-
+      from = options[:from]
+      to = options[:to]
+      
       uri = "payments/status/#{status}?page=#{page}"
+      uri += "&from=#{from}" if from
+      uri += "&to=#{to}" if to
 
       pay_get(uri)
     end
