@@ -175,19 +175,19 @@ module Iamport
 
     # GET
     def pay_get(uri, payload = {})
-      url = "#{IAMPORT_HOST}/#{uri}"
+      url = URI::encode("#{IAMPORT_HOST}/#{uri}")
       HTTParty.get(url, headers: headers, body: payload)
     end
 
     # POST
     def pay_post(uri, payload = {})
-      url = "#{IAMPORT_HOST}/#{uri}"
+      url = URI::encode("#{IAMPORT_HOST}/#{uri}")
       HTTParty.post(url, headers: headers, body: payload)
     end
 
     # DELETE
     def pay_delete(uri, payload = {})
-      url = "#{IAMPORT_HOST}/#{uri}"
+      url = URI::encode("#{IAMPORT_HOST}/#{uri}")
       HTTParty.delete(url, headers: headers, body: payload)
     end
   end
