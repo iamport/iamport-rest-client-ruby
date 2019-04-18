@@ -166,6 +166,18 @@ module Iamport
       pay_post(uri, body)
     end
 
+    def delete_receipt(imp_uid)
+      uri = "receipts/#{imp_uid}"
+      
+      pay_delete(uri)
+    end
+
+    def delete_external_receipt(merchant_uid)
+      uri = "receipts/#{merchant_uid}"
+      
+      pay_delete(uri)
+    end
+
     private
 
     # Get header data
