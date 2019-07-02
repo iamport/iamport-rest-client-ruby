@@ -97,17 +97,22 @@ module Iamport
       pay_post(uri, payload)
     end
 
-    def find_subscribe_customer(customer_uid)
-      warn "[DEPRECATION] `find_subscribe_customer` is deprecated.  Please use `customer_payments` instead."
-      customer_payments(customer_uid)
-    end
-
     # create payment again
     # POST https://api.iamport.kr/#!/subscribe/payments/again
     def create_payment_again(payload = {})
       uri = "subscribe/payments/again"
 
       pay_post(uri, payload)
+    end
+
+    # (un)schedule payments
+    # POST https://api.iamport.kr/#!/subscribe/schedule
+    %i(schedule unschedule).each do |method_name|
+      define_method("#{method_name}_payments") do |payload|
+        uri = "/subscribe/payments/#{method_name}"
+
+        pay_post(uri, payload)
+      end
     end
 
     # Create and Delete a billing key by customer_uid
