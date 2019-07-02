@@ -199,7 +199,7 @@ module Iamport
     # POST
     def pay_post(uri, payload = {})
       url = "#{IAMPORT_HOST}/#{uri}"
-      HTTParty.post(url, headers: headers, body: payload)
+      HTTParty.post(url, headers: headers.merge('Content-Type' => 'application/json'), body: payload.to_json)
     end
 
     # DELETE
