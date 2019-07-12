@@ -49,7 +49,7 @@ module Iamport
       page = options[:page] || 1
       from = options[:from]
       to = options[:to]
-      
+
       uri = "payments/status/#{status}?page=#{page}"
       uri += "&from=#{from}" if from
       uri += "&to=#{to}" if to
@@ -115,6 +115,24 @@ module Iamport
       end
     end
 
+    def schedule_merchant_uid(merchant_uid)
+      uri = "/subscribe/payments/schedule/#{merchant_uid}"
+
+      pay_get(uri)
+    end
+
+    def schedule_customer_uid(customer_uid:, from:, to:, page:nil, schedule_status: nil)
+      uri = "/subscribe/payments/schedule/#{customer_uid}?"
+
+      uri += "?from=#{from.to_i}"
+      uri += "&to=#{to.to_i}"
+
+      uri += "&page=#{to}" if page
+      uri += "&page=#{schedule_status}" if schedule_status
+
+      pay_get(uri)
+    end
+
     # Create and Delete a billing key by customer_uid
     # DELETE https://api.iamport.kr/#!/subscribe/customers/:customer_uid
     # GET https://api.iamport.kr/#!/subscribe/customers/:customer_uid
@@ -137,49 +155,49 @@ module Iamport
 
       pay_get(uri)
     end
-    
+
     def create_vbank(body)
       uri = "/vbanks"
 
       pay_post(uri, body)
     end
-    
+
     def delete_vbank(imp_uid)
       uri = "vbanks/#{imp_uid}"
-      
+
       pay_delete(uri)
     end
-    
+
     def check_holder(options = {})
       bank_code = options[:bank_code]
       bank_num = options[:bank_num]
 
       uri = "vbanks/holder?bank_code=#{bank_code}&bank_num=#{bank_num}"
-      
+
       pay_get(uri)
     end
-    
+
     def get_receipt(imp_uid)
       uri = "receipts/#{imp_uid}"
-      
+
       pay_get(uri)
     end
-    
+
     def create_receipt(imp_uid, body)
       uri = "receipts/#{imp_uid}"
-      
+
       pay_post(uri, body)
     end
 
     def delete_receipt(imp_uid)
       uri = "receipts/#{imp_uid}"
-      
+
       pay_delete(uri)
     end
 
     def delete_external_receipt(merchant_uid)
       uri = "receipts/#{merchant_uid}"
-      
+
       pay_delete(uri)
     end
 
