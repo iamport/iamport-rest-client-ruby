@@ -116,13 +116,13 @@ module Iamport
     end
 
     def schedule_merchant_uid(merchant_uid)
-      uri = "/subscribe/payments/schedule/#{merchant_uid}"
+      uri = "/subscribe/payments/schedule/#{CGI.escape(merchant_uid)}"
 
       pay_get(uri)
     end
 
     def schedule_customer_uid(customer_uid:, from:, to:, page:nil, schedule_status: nil)
-      uri = "/subscribe/payments/schedule/#{customer_uid}?"
+      uri = "/subscribe/payments/schedule/#{CGI.escape(customer_uid)}?"
 
       uri += "?from=#{from.to_i}"
       uri += "&to=#{to.to_i}"
