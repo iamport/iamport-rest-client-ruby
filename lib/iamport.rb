@@ -94,8 +94,8 @@ module Iamport
     end
 
     def find_subscribe_customer(customer_uid)
-      warn "[DEPRECATION] `find_subscribe_customer` is deprecated.  Please use `customer` instead."
-      customer(customer_uid)
+      warn "[DEPRECATION] `find_subscribe_customer` is deprecated.  Please use `customer_payments` instead."
+      customer_payments(customer_uid)
     end
 
     # create payment again
