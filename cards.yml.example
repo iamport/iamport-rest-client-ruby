@@ -1,8 +1,0 @@
-card_nick_name:
-  card_number: xxxx-xxxx-xxxx-xxxx
-  expiry: 2011-01
-  birth: '800101'
-  pwd_2digit: '00'
-  customer_email: your_email
-  customer_name: your_name
-  customer_tel: 010-1234-5678

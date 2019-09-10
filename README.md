@@ -1,10 +1,10 @@
 # Iamport for Stripes.co.kr
 
-Ruby 사용자를 위한 아임포트 REST API 연동 모듈입니다. (0.2.2 버전에서 stripes 에서 수정하였습니다. )
+Ruby 사용자를 위한 아임포트 REST API 연동 모듈입니다. (0.3.0 버전에서 stripes 에서 수정하였습니다. )
 
 ## Code Status
 
-[![Build Status](https://travis-ci.org/iamport/iamport-rest-client-ruby.svg?branch=master)](https://travis-ci.org/iamport/iamport-rest-client-ruby)
+[![Build Status](https://travis-ci.com/stripeskr/iamport-rest-client-ruby.svg?branch=master)](https://travis-ci.org/iamport/iamport-rest-client-ruby)
 
 # 세팅하는 방법
 
@@ -34,6 +34,18 @@ Iamport.payment("IMP_UID")
 Iamport.payments
 Iamport.payments(status: "paid")
 Iamport.payments(status: "paid", page: 2)
+```
+
+## payments.validation API
+
+##### 결제예정금액을 사전등록
+```ruby
+Iamport.prepare(merchant_uid: "M00001", amount: 10000)
+```
+
+##### 사전등록된 결제정보를 조회
+```ruby
+Iamport.prepared(merchant_uid: "M00001")
 ```
 
 ## cancel API
@@ -148,10 +160,6 @@ After checking out the repo, run `bin/setup` to install dependencies. Then, run 
 
 To install this gem onto your local machine, run `bundle exec rake install`. To release a new version, update the version number in `version.rb`, and then run `bundle exec rake release`, which will create a git tag for the version, push git commits and tags, and push the `.gem` file to [rubygems.org](https://rubygems.org).
 
-## Test
-Copy and paste cards.yml.example, import_key.yml.example to cards.yml, import_key.yml respectively.
-
-Put your own card information and api_key information and run test 
 ## Contributing
 
 Bug reports and pull requests are welcome on GitHub at https://github.com/[USERNAME]/iamport. This project is intended to be a safe, welcoming space for collaboration, and contributors are expected to adhere to the [Contributor Covenant](contributor-covenant.org) code of conduct.

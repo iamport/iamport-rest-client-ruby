@@ -1,14 +1,16 @@
-require 'spec_helper'
-require 'httparty'
+api_key = "xxxxxxx"
+api_secret = "xxxxxx"
+imp_uid = "xxxxxxx"
+merchant_uid = "M00001"
 
 describe Iamport, "::VERSION" do
-  it 'has a version number' do
+  it "has a version number" do
     expect(Iamport::VERSION).not_to be nil
   end
 end
 
 describe Iamport, ".configure" do
-  it 'sets configuration' do
+  it "sets configuration" do
     Iamport.configure do |config|
       config.api_key = "API_KEY"
       config.api_secret = "API_SECRET"
@@ -19,16 +21,12 @@ describe Iamport, ".configure" do
 end
 
 describe Iamport do
-  IAMPORT_HOST = "https://api.iamport.kr"
+  IAMPORT_HOST = "https://api.iamport.kr".freeze
 
   before do
-    y = YAML::load(File.open('iamport_key.yml'))
-    @api_key = y['api_key']
-    @api_secret = y['api_secret']
-
     Iamport.configure do |config|
-      config.api_key = @api_key
-      config.api_secret = @api_secret
+      config.api_key = api_key
+      config.api_secret = api_secret
     end
   end
 
@@ -37,26 +35,30 @@ describe Iamport do
       expected_url = "#{IAMPORT_HOST}/users/getToken"
       expected_params = {
         body: {
-         imp_key: @api_key,
-         imp_secret: @api_secret,
-        }
+          imp_key: api_key,
+          imp_secret: api_secret,
+        },
       }
 
       response = {
         "response" => {
-          "access_token" => "NEW_TOKEN"
-        }
+          "access_token" => "NEW_TOKEN",
+        },
       }
 
       expect(HTTParty).to receive(:post).with(expected_url, expected_params).and_return(response)
 
       expect(Iamport.token).to eq("NEW_TOKEN")
     end
+
+    it "raises error when invalid request" do
+      expect { Iamport.token }.to raise_error("Invalid Token")
+    end
   end
 
-  let(:payment_json) {
+  let(:payment_json) do
     {
-      "amount" => 10000,
+      "amount" => 10_000,
       "apply_num" => "00000000",
       "buyer_addr" => "서울 송파구 잠실동",
       "buyer_email" => "test@email.com",
@@ -71,56 +73,86 @@ describe Iamport do
       "custom_data" => nil,
       "fail_reason" => nil,
       "failed_at" => 0,
-      "imp_uid" => "IMP_UID",
-      "merchant_uid" => "M00001",
+      "imp_uid" => imp_uid,
+      "merchant_uid" => merchant_uid,
       "name" => "제품이름",
-      "paid_at" => 1446691529,
+      "paid_at" => 1_446_691_529,
       "pay_method" => "card",
       "pg_provider" => "nice",
       "pg_tid" => "w00000000000000000000000000001",
       "receipt_url" => "RECEIPT_URL",
       "status" => "paid",
-      "user_agent" => "Mozilla/5.0 (iPhone; CPU iPhone OS 9_0_2 like Mac OS X) AppleWebKit/601.1.46 (KHTML, like Gecko) Version/9.0 Mobile/13A452 Safari/601.1",
+      "user_agent" => "Mozilla/5.0",
       "vbank_date" => 0,
       "vbank_holder" => nil,
       "vbank_name" => nil,
       "vbank_num" => nil,
     }
-  }
+  end
 
-  describe "payment" do
+  let(:customer_uid) { "8" }
+
+  let(:customer_response) do
+    {
+      "code" => 0,
+      "message" => "string",
+      "response" => {
+        "customer_uid" => customer_uid,
+        "card_name" => "string",
+        "customer_name" => "string",
+        "customer_tel" => "string",
+        "customer_email" => "string",
+        "customer_addr" => "string",
+        "customer_postcode" => "string",
+        "inserted" => 0,
+        "updated" => 0,
+      },
+    }
+  end
+
+  let(:customer_payment_info) do
+    {
+      merchant_uid: "xxxxx",
+      amount: 11_111,
+      card_number: "dddd-dddd-dddd-ddddd",
+      expiry: "yyy-mm",
+      birth: "dddddd",
+    }
+  end
+
+  describe ".payment" do
     it "returns payment info" do
       allow(Iamport).to receive(:token).and_return("NEW_TOKEN")
 
-      expected_url = "#{IAMPORT_HOST}/payments/IMP_UID"
+      expected_url = "#{IAMPORT_HOST}/payments/#{imp_uid}"
       expected_params = {
-          headers: {
-              "Authorization" => "NEW_TOKEN"
-          },
-          body: {}
+        headers: {
+          "Authorization" => "NEW_TOKEN",
+        },
+        body: {},
       }
 
       response = {
-        "response" => payment_json
+        "response" => payment_json,
       }
 
       expect(HTTParty).to receive(:get).with(expected_url, expected_params).and_return(response)
 
-      res = Iamport.payment("IMP_UID")
-      expect(res["response"]["imp_uid"]).to eq("IMP_UID")
+      res = Iamport.payment(imp_uid)
+      expect(res["response"]["imp_uid"]).to eq(imp_uid)
     end
   end
 
-  describe "payments" do
+  describe ".payments" do
     it "returns payment list" do
       allow(Iamport).to receive(:token).and_return("NEW_TOKEN")
 
       expected_url = "#{IAMPORT_HOST}/payments/status/all?page=1"
       expected_params = {
-          headers: {
-              "Authorization" => "NEW_TOKEN"
-          },
-          body: {}
+        headers: {
+          "Authorization" => "NEW_TOKEN",
+        },
+        body: {},
       }
 
       response = {
@@ -131,30 +163,140 @@ describe Iamport do
           "list" => [
             payment_json,
             payment_json,
-          ]
-        }
+          ],
+        },
       }
 
       expect(HTTParty).to receive(:get).with(expected_url, expected_params).and_return(response)
-
       res = Iamport.payments
       expect(res["response"]["total"]).to eq(150)
       expect(res["response"]["list"].size).to eq(2)
     end
   end
 
-  describe 'cancel' do
-    it 'return cancel info' do
+  describe ".create_onetime_payment" do
+    let(:one_time_response) do
+      {
+        "code" => 0,
+        "message" => "string",
+        "response" => payment_json,
+      }
+    end
+
+    it "creates an onetime payment" do
+      allow(Iamport).to receive(:token).and_return "NEW_TOKEN"
+      one_time_url = "#{IAMPORT_HOST}/subscribe/payments/onetime"
+
+      expected_params = {
+        headers: {
+          "Authorization" => "NEW_TOKEN",
+        },
+        body: customer_payment_info,
+      }
+
+      expect(HTTParty).to receive(:post).with(one_time_url, expected_params)
+        .and_return(one_time_response)
+      body = expected_params[:body]
+      res = Iamport.create_onetime_payment(body)
+
+      expect(res["code"]).to eq(0)
+      expect(res["response"]["imp_uid"]).to eq(imp_uid)
+    end
+  end
+
+  describe ".create_payment_again" do
+    let(:payment_again_response) do
+      {
+        "code" => 0,
+        "message" => "string",
+        "response" => payment_json,
+      }
+    end
+
+    it "creates payment again for customer" do
+      allow(Iamport).to receive(:token).and_return "NEW_TOKEN"
+      payment_again_url = "#{IAMPORT_HOST}/subscribe/payments/again"
+      payload = {
+        customer_uid: "xxxxx",
+        merchant_uid: "xxxxx",
+        amount: 1,
+        name: "tester",
+      }
+      expected_params = {
+        headers: {
+          "Authorization" => "NEW_TOKEN",
+        },
+        body: payload,
+      }
+
+      expect(HTTParty).to receive(:post).with(payment_again_url, expected_params)
+        .and_return(payment_again_response)
+      body = expected_params[:body]
+      res = Iamport.create_payment_again(body)
+
+      expect(res["code"]).to eq(0)
+      expect(res["response"]["merchant_uid"]).to eq(merchant_uid)
+    end
+  end
+
+  describe ".create_customer" do
+    it "creates new subscriber" do
+      allow(Iamport).to receive(:token).and_return "NEW_TOKEN"
+      customer_url = "#{IAMPORT_HOST}/subscribe/customers/#{customer_uid}"
+
+      expected_params = {
+        headers: {
+          "Authorization" => "NEW_TOKEN",
+        },
+        body: customer_payment_info,
+      }
+
+      expect(HTTParty).to receive(:post).with(customer_url, expected_params)
+        .and_return(customer_response)
+
+      body = expected_params[:body]
+      res = Iamport.create_customer(customer_uid, body)
+
+      expect(res["code"]).to eq(0)
+      expect(res["response"]["customer_uid"]).to eq(customer_uid)
+      expect(res["response"]["customer_uid"]).to be_a_kind_of(String)
+    end
+  end
+
+  describe ".customer" do
+    it "returns subscribe customer info" do
+      allow(Iamport).to receive(:token).and_return "NEW_TOKEN"
+      customer_url = "#{IAMPORT_HOST}/subscribe/customers/#{customer_uid}"
+      expected_params = {
+        headers: {
+          "Authorization" => "NEW_TOKEN",
+        },
+        body: {},
+      }
+
+      expect(HTTParty).to receive(:get).with(customer_url, expected_params)
+        .and_return(customer_response)
+
+      res = Iamport.customer(customer_uid)
+
+      expect(res["code"]).to eq(0)
+      expect(res["response"]["customer_uid"]).to eq(customer_uid)
+      expect(res["response"]["customer_uid"]).to be_a_kind_of(String)
+    end
+  end
+
+  describe 'prepare' do
+    it 'return prepared info' do
       allow(Iamport).to receive(:token).and_return 'NEW_TOKEN'
 
-      expected_url = "#{IAMPORT_HOST}/payments/cancel"
+      expected_url = "#{IAMPORT_HOST}/payments/prepare"
       expected_params = {
           headers: {
               "Authorization" => "NEW_TOKEN"
           },
           body: {
-              imp_uid: "IMP_UID",
-              merchant_uid: "M00001"
+              "merchant_uid" => "M00001",
+              "amount" => 10000,
           }
       }
 
@@ -162,8 +304,8 @@ describe Iamport do
           "code" => 0,
           "message" => '',
           "response" => {
-              "imp_uid" => "IMP_UID",
-              "merchant_uid" => "M00001"
+              "merchant_uid" => "M00001",
+              "amount" => 10000,
           }
       }
 
@@ -171,179 +313,193 @@ describe Iamport do
 
       body = expected_params[:body]
 
+      res = Iamport.prepare(body)
+      expect(res["response"]["merchant_uid"]).to eq("M00001")
+      expect(res["response"]["amount"]).to eq(10000)
+    end
+  end
+
+  describe 'prepared' do
+    it 'return prepared info' do
+      allow(Iamport).to receive(:token).and_return 'NEW_TOKEN'
+
+      expected_url = "#{IAMPORT_HOST}/payments/prepare/M00001"
+      expected_params = {
+          headers: {
+              "Authorization" => "NEW_TOKEN"
+          },
+          body: {}
+      }
+
+      response = {
+          "code" => 0,
+          "message" => '',
+          "response" => {
+              "merchant_uid" => "M00001",
+              "amount" => 10000,
+          }
+      }
+
+      expect(HTTParty).to receive(:get).with(expected_url, expected_params).and_return(response)
+
+      res = Iamport.prepared("M00001")
+      expect(res["response"]["merchant_uid"]).to eq("M00001")
+      expect(res["response"]["amount"]).to eq(10000)
+    end
+  end
+
+  describe ".delete_customer" do
+    it "deletes customer" do
+      allow(Iamport).to receive(:token).and_return "NEW_TOKEN"
+      delete_customer_url = "#{IAMPORT_HOST}/subscribe/customers/#{customer_uid}"
+      expected_params = {
+        headers: {
+          "Authorization" => "NEW_TOKEN",
+        },
+        body: {},
+      }
+
+      expect(HTTParty).to receive(:delete).with(delete_customer_url, expected_params)
+        .and_return(customer_response)
+      res = Iamport.delete_customer(customer_uid)
+
+      expect(res["code"]).to eq(0)
+      expect(res["response"]["customer_uid"]).to eq(customer_uid)
+      expect(res["response"]["customer_uid"]).to be_a_kind_of(String)
+    end
+  end
+
+  describe ".customer_payments" do
+    let(:customer_payment_response) do
+      {
+        "code" => 0,
+        "message" => "string",
+        "response" => {
+          "total" => 1,
+          "previous" => 0,
+          "next" => 0,
+          "list" => [
+            payment_json,
+          ],
+        },
+      }
+    end
+
+    it "returns payments of customer" do
+      allow(Iamport).to receive(:token).and_return "NEW_TOKEN"
+      customer_payments_url =
+        "#{IAMPORT_HOST}/subscribe/customers/#{customer_uid}/payments"
+
+      expected_params = {
+        headers: {
+          "Authorization" => "NEW_TOKEN",
+        },
+        body: {},
+      }
+
+      expect(HTTParty).to receive(:get).with(customer_payments_url, expected_params)
+        .and_return(customer_payment_response)
+      res = Iamport.customer_payments(customer_uid)
+
+      expect(res["code"]).to eq(0)
+      expect(res["response"]["list"]).to be_a_kind_of(Array)
+      expect(res["response"]["total"]).to eq(1)
+      expect(res["response"]["list"].first["merchant_uid"]).to eq(merchant_uid)
+      expect(res["response"]["list"].first["imp_uid"]).to eq(imp_uid)
+    end
+  end
+
+  describe ".cancel" do
+    it "returns cancel info" do
+      allow(Iamport).to receive(:token).and_return "NEW_TOKEN"
+
+      expected_url = "#{IAMPORT_HOST}/payments/cancel"
+      expected_params = {
+        headers: {
+          "Authorization" => "NEW_TOKEN",
+        },
+        body: {
+          imp_uid: imp_uid,
+          merchant_uid: "M00001",
+        },
+      }
+
+      response = {
+        "code" => 0,
+        "message" => "",
+        "response" => {
+          "imp_uid" => imp_uid,
+          "merchant_uid" => "M00001",
+        },
+      }
+
+      expect(HTTParty).to receive(:post).with(expected_url, expected_params).and_return(response)
+      body = expected_params[:body]
+
       res = Iamport.cancel(body)
-      expect(res["response"]["imp_uid"]).to eq("IMP_UID")
+
+      expect(res["response"]["imp_uid"]).to eq(imp_uid)
       expect(res["response"]["merchant_uid"]).to eq("M00001")
     end
   end
 
-  describe 'find' do
-    it 'return pyments using merchant_uid' do
-      allow(Iamport).to receive(:token).and_return 'NEW_TOKEN'
-
+  describe ".find" do
+    it "returns payments using merchant_uid" do
+      allow(Iamport).to receive(:token).and_return "NEW_TOKEN"
       expected_url = "#{IAMPORT_HOST}/payments/find/M00001"
       expected_params = {
         headers: {
-          "Authorization" => "NEW_TOKEN"
+          "Authorization" => "NEW_TOKEN",
         },
-        body: {}
+        body: {},
       }
 
       response = {
-          "response" => payment_json
+        "response" => payment_json,
       }
 
       expect(HTTParty).to receive(:get).with(expected_url, expected_params).and_return(response)
 
       res = Iamport.find("M00001")
-      expect(res["response"]["merchant_uid"]).to eq("M00001")
-      expect(res["response"]["imp_uid"]).to eq("IMP_UID")
+      expect(res["response"]["imp_uid"]).to eq(imp_uid)
     end
   end
 
-  describe '[create|find|delete]_subscribe_customer' do
-    it 'must return customer subscription info [test from Iamport]' do
+  describe 'create_customer' do
+    it 'must return customer subscription info' do
       allow(Iamport).to receive(:token).and_return 'NEW_TOKEN'
 
       customer_uid = "your_customer_1234"
       expected_url = "#{IAMPORT_HOST}/subscribe/customers/#{customer_uid}"
       expected_params = {
-          headers: {
-              "Authorization" => "NEW_TOKEN"
-          },
-          body: {
-              card_number: "1234-1234-1234-1234",
-              expiry: "2019-07",
-              birth: "801234",
-              pwd_2digit: "00",
-              customer_email: "user@your_customer.com",
-              customer_name: "홍길동",
-              customer_tel: "010-1234-5678"
-          }
+        headers: {
+          "Authorization" => "NEW_TOKEN"
+        },
+        body: {
+          card_number: "1234-1234-1234-1234",
+          expiry: "2019-07",
+          birth: "801234",
+          pwd_2digit: "00",
+          customer_email: "user@your_customer.com",
+          customer_name: "홍길동",
+          customer_tel: "010-1234-5678"
+        }
       }
 
       response = {
-          "code"=>-1,
-          "message"=>"카드정보 인증 및 빌키 발급에 실패하였습니다. [F112]유효하지않은 카드번호를 입력하셨습니다. (card_bin 없음)",
-          "response"=>nil
+        "code"=>-1,
+        "message"=>"카드정보 인증 및 빌키 발급에 실패하였습니다. [F112]유효하지않은 카드번호를 입력하셨습니다. (card_bin 없음)",
+        "response"=>nil
       }
 
       expect(HTTParty).to receive(:post).with(expected_url, expected_params).and_return(response)
 
       body = expected_params[:body]
 
-      res = Iamport.create_subscribe_customer(customer_uid, body)
+      res = Iamport.create_customer(customer_uid, body)
       expect(res["code"]).to eq(response["code"])
       expect(res["message"]).to eq(response["message"])
       expect(res["response"]).to eq(response["response"])
     end
-    it 'must return customer subscription info - yjchoi card info(BC카드, 우리카드)' do
-      customer_uid = "your_customer_1234"
-      cards = YAML::load(File.open('cards.yml'))
-      card = cards['yjchoi']
-      body = {
-          card_number: card['card_number'],
-          expiry: card['expiry'],
-          birth: card['birth'],
-          pwd_2digit: card['pwd_2digit'].to_s,
-          customer_email: card['customer_email'],
-          customer_name: card['customer_name'],
-          customer_tel: card['customer_tel']
-      }
-
-      # 1. Iamport.create_subscribe_customer
-      res = Iamport.create_subscribe_customer(customer_uid, body)
-      expect(res["code"]).to eq(0)
-      expect(res["message"]).to be_nil
-      expect(res["response"]['customer_uid']).to eq(customer_uid)
-      expect(res["response"]['customer_email']).to eq(body[:customer_email])
-      expect(res["response"]['customer_name']).to eq(body[:customer_name])
-      expect(res["response"]['customer_tel']).to eq(body[:customer_tel])
-
-      res = Iamport.find_subscribe_customer(customer_uid)
-      expect(res["code"]).to eq(0)
-      expect(res["message"]).to be_nil
-      expect(res["response"]['customer_uid']).to eq(customer_uid)
-      expect(res["response"]['customer_email']).to eq(body[:customer_email])
-      expect(res["response"]['customer_name']).to eq(body[:customer_name])
-      expect(res["response"]['customer_tel']).to eq(body[:customer_tel])
-
-      res = Iamport.delete_subscribe_customer(customer_uid)
-      expect(res["code"]).to eq(0)
-      expect(res["message"]).to be_nil
-      expect(res["response"]['customer_uid']).to eq(customer_uid)
-      expect(res["response"]['customer_email']).to eq(body[:customer_email])
-      expect(res["response"]['customer_name']).to eq(body[:customer_name])
-      expect(res["response"]['customer_tel']).to eq(body[:customer_tel])
-
-      res = Iamport.delete_subscribe_customer(customer_uid)
-      expect(res['code']).to eq(1)
-      expect(res['message']).to match(customer_uid)
-      expect(res['response']).to be_nil
-    end
-  end
-
-  describe 'create_subscribe_payments_again/payments_cancel' do
-    # required fields
-    let(:customer_uid) { 'your_customer_1234' }
-    let(:merchant_uid) { 'test' + SecureRandom.base64(8) }
-    let(:amount) { 1004 }
-    let(:name) { 'TEST 주문 ' + Time.now.to_s }
-
-    before 'it creates subscribe customer' do
-      cards = YAML::load(File.open('cards.yml'))
-      card = cards['yjchoi']
-      body = {
-          card_number: card['card_number'],
-          expiry: card['expiry'],
-          birth: card['birth'],
-          pwd_2digit: card['pwd_2digit'].to_s,
-          customer_email: card['customer_email'],
-          customer_name: card['customer_name'],
-          customer_tel: card['customer_tel']
-      }
-
-      # 1. Iamport.create_subscribe_customer
-      res = Iamport.create_subscribe_customer(customer_uid, body)
-      expect(res['code']).to eq(0)
-    end
-    it 'must create payments and cancel it' do
-      # 1. 결제 신청
-      res = Iamport.create_subscribe_payments_again(customer_uid, merchant_uid, amount, name, buyer_name: 'TEST_NAME', buyer_tel: 'TEST_TEL')
-
-      expect(res['code']).to eq(0)
-      expect(res['response']['imp_uid']).not_to be_nil
-      expect(res['response']['merchant_uid']).to eq(merchant_uid)
-      expect(res['response']['amount']).to eq(amount)
-      expect(res['response']['name']).to eq(name)
-      expect(res['response']['buyer_name']).to eq('TEST_NAME')
-      expect(res['response']['buyer_tel']).to eq('TEST_TEL')
-
-      imp_uid = res['response']['imp_uid']
-
-      # 2. 결제 조회
-      res = Iamport.payment(imp_uid)
-      expect(res['code']).to eq(0)
-      expect(res['response']['imp_uid']).not_to be_nil
-      expect(res['response']['merchant_uid']).to eq(merchant_uid)
-      expect(res['response']['amount']).to eq(amount)
-      expect(res['response']['name']).to eq(name)
-      expect(res['response']['buyer_name']).to eq('TEST_NAME')
-      expect(res['response']['buyer_tel']).to eq('TEST_TEL')
-
-      # 2-1. payment status - 정상결제
-      expect(Iamport.payment_status(imp_uid)).to eq 'paid'
-
-      # 3. 결제 취소
-      res = Iamport.cancel(imp_uid: imp_uid)
-      expect(res['response']['status']).to eq('cancelled')
-
-      # 3-1. payment status - 취소된결제
-      expect(Iamport.payment_status(imp_uid)).to eq 'cancelled'
-
-      # 4. non existing imp_uid
-      expect(Iamport.payment_status('non_existing_imp_uid')).to eq '존재하지 않는 결제정보입니다.'
-    end
   end
 end
-

@@ -1,8 +1,8 @@
-require 'httparty'
-require 'iamport/version'
+require "iamport/version"
+require "httparty"
 
 module Iamport
-  IAMPORT_HOST = "https://api.iamport.kr"
+  IAMPORT_HOST = "https://api.iamport.kr".freeze
 
   class Config
     attr_accessor :api_key
@@ -23,11 +23,13 @@ module Iamport
     def token
       url = "#{IAMPORT_HOST}/users/getToken"
       body = {
-          imp_key: config.api_key,
-          imp_secret: config.api_secret
+        imp_key: config.api_key,
+        imp_secret: config.api_secret,
       }
 
       result = HTTParty.post url, body: body
+
+      raise "Invalid Token" unless result["response"]
       result["response"]["access_token"]
     end
 
@@ -36,7 +38,7 @@ module Iamport
     def payment(imp_uid)
       uri = "payments/#{imp_uid}"
 
-      _get(uri)
+      pay_get(uri)
     end
 
     # Search payment information using status.
@@ -48,7 +50,7 @@ module Iamport
 
       uri = "payments/status/#{status}?page=#{page}"
 
-      _get(uri)
+      pay_get(uri)
     end
 
     # Find payment information using merchant uid
@@ -56,7 +58,23 @@ module Iamport
     def find(merchant_uid)
       uri = "payments/find/#{merchant_uid}"
 
-      _get(uri)
+      pay_get(uri)
+    end
+
+    # Prepare payment validation
+    # https://api.iamport.kr/#!/payments/prepare
+    def prepare(body)
+      uri = "payments/prepare"
+
+      pay_post(uri, body)
+    end
+
+    # Get prepared payment information by merchant_uid
+    # https://api.iamport.kr/#!/payments/prepare/:merchant_uid
+    def prepared(merchant_uid)
+      uri = "payments/prepare/#{merchant_uid}"
+
+      pay_get(uri)
     end
 
     # Canceled payments
@@ -64,7 +82,7 @@ module Iamport
     def cancel(body)
       uri = "payments/cancel"
 
-      _post(uri, body)
+      pay_post(uri, body)
     end
 
     # create onetime
@@ -75,79 +93,65 @@ module Iamport
       pay_post(uri, payload)
     end
 
-    # Get a billing key by customer_uid
-    # GET https://api.iamport.kr/#!/subscribe/customers/:customer_uid
     def find_subscribe_customer(customer_uid)
-      uri = "subscribe/customers/#{customer_uid}"
-
-      _get(uri)
-    end
-    
-    # Create (or update if exists) a billing key by customer_uid
-    # POST https://api.iamport.kr/#!/subscribe/customers/:customer_uid
-    def create_subscribe_customer(customer_uid, body)
-      uri = "subscribe/customers/#{customer_uid}"
-
-      _post(uri, body)
+      warn "[DEPRECATION] `find_subscribe_customer` is deprecated.  Please use `customer` instead."
+      customer(customer_uid)
     end
 
-    # Delete a billing key by customer_uid
-    # DELETE https://api.iamport.kr/#!/subscribe/customers/:customer_uid
-    def delete_subscribe_customer(customer_uid)
-      uri = "subscribe/customers/#{customer_uid}"
-
-      _delete(uri)
-    end
-
-    # Create payment of customer_uid
+    # create payment again
     # POST https://api.iamport.kr/#!/subscribe/payments/again
-    def create_subscribe_payments_again(customer_uid, merchant_uid, amount, name, options)
+    def create_payment_again(payload = {})
       uri = "subscribe/payments/again"
 
-      options ||= {}
-      body = options.merge!(customer_uid: customer_uid, merchant_uid: merchant_uid, amount: amount, name: name)
-
-      _post(uri, body)
+      pay_post(uri, payload)
     end
 
-    def payment_status(imp_uid)
-      res = JSON.parse(payment(imp_uid).body) || {}
-      if res['code'] == 0
-        res['response']['status']
-      else
-        res['message']
+    # Create and Delete a billing key by customer_uid
+    # DELETE https://api.iamport.kr/#!/subscribe/customers/:customer_uid
+    # GET https://api.iamport.kr/#!/subscribe/customers/:customer_uid
+    { customer: :get, delete_customer: :delete }.each do |method_name, type|
+      define_method(method_name) do |customer_uid|
+        uri = "subscribe/customers/#{customer_uid}"
+
+        send("pay_#{type}", uri)
       end
     end
 
+    def create_customer(customer_uid, payload = {})
+      uri = "subscribe/customers/#{customer_uid}"
 
+      pay_post(uri, payload)
+    end
+
+    def customer_payments(customer_uid)
+      uri = "subscribe/customers/#{customer_uid}/payments"
+
+      pay_get(uri)
+    end
 
     private
 
     # Get header data
-    def get_headers
+    def headers
       { "Authorization" => token }
     end
 
     # GET
-    def _get(uri, payload = {})
+    def pay_get(uri, payload = {})
       url = "#{IAMPORT_HOST}/#{uri}"
-
-      HTTParty.get url, headers: get_headers, body: payload
+      HTTParty.get(url, headers: headers, body: payload)
     end
 
     # POST
-    def _post(uri, payload = {})
+    def pay_post(uri, payload = {})
       url = "#{IAMPORT_HOST}/#{uri}"
-
-      HTTParty.post url, headers: get_headers, body: payload
+      HTTParty.post(url, headers: headers, body: payload)
     end
 
     # DELETE
-    def _delete(uri, payload = {})
+    def pay_delete(uri, payload = {})
       url = "#{IAMPORT_HOST}/#{uri}"
-
-      HTTParty.delete url, headers: get_headers, body: payload
+      HTTParty.delete(url, headers: headers, body: payload)
     end
-
   end
 end

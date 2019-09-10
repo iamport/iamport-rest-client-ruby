@@ -1,3 +1,3 @@
 module Iamport
-  VERSION = "0.2.2st.pre.3"
+  VERSION = "0.3.0.str1".freeze
 end
