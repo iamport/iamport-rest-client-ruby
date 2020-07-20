@@ -200,6 +200,18 @@ module Iamport
 
       pay_delete(uri)
     end
+    
+    def get_certificate(imp_uid)
+      uri = "certifications/#{imp_uid}"
+
+      pay_get(uri)
+    end
+
+    def delete_certificate(imp_uid)
+      uri = "certifications/#{imp_uid}"
+
+      pay_delete(uri)
+    end
 
     private
 
