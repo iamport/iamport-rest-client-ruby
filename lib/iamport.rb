@@ -60,7 +60,7 @@ module Iamport
     # Find payment information using merchant uid
     # https://api.iamport.kr/#!/payments/getPaymentByMerchantUid
     def find(merchant_uid)
-      uri = "payments/find/#{merchant_uid}"
+      uri = "payments/find/#{CGI.escape(merchant_uid)}"
 
       pay_get(uri)
     end
@@ -76,7 +76,7 @@ module Iamport
     # Get prepared payment information by merchant_uid
     # https://api.iamport.kr/#!/payments/prepare/:merchant_uid
     def prepared(merchant_uid)
-      uri = "payments/prepare/#{merchant_uid}"
+      uri = "payments/prepare/#{CGI.escape(merchant_uid)}"
 
       pay_get(uri)
     end
@@ -138,20 +138,20 @@ module Iamport
     # GET https://api.iamport.kr/#!/subscribe/customers/:customer_uid
     { customer: :get, delete_customer: :delete }.each do |method_name, type|
       define_method(method_name) do |customer_uid|
-        uri = "subscribe/customers/#{customer_uid}"
+        uri = "subscribe/customers/#{CGI.escape(customer_uid)}"
 
         send("pay_#{type}", uri)
       end
     end
 
     def create_customer(customer_uid, payload = {})
-      uri = "subscribe/customers/#{customer_uid}"
+      uri = "subscribe/customers/#{CGI.escape(customer_uid)}"
 
       pay_post(uri, payload)
     end
 
     def customer_payments(customer_uid)
-      uri = "subscribe/customers/#{customer_uid}/payments"
+      uri = "subscribe/customers/#{CGI.escape(customer_uid)}/payments"
 
       pay_get(uri)
     end
@@ -196,7 +196,7 @@ module Iamport
     end
 
     def delete_external_receipt(merchant_uid)
-      uri = "receipts/#{merchant_uid}"
+      uri = "receipts/#{CGI.escape(merchant_uid)}"
 
       pay_delete(uri)
     end
