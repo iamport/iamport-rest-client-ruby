@@ -47,8 +47,12 @@ module Iamport
     def payments(options = {})
       status = options[:status] || "all"
       page = options[:page] || 1
+      from = options[:from]
+      to = options[:to]
 
       uri = "payments/status/#{status}?page=#{page}"
+      uri += "&from=#{from}" if from
+      uri += "&to=#{to}" if to
 
       pay_get(uri)
     end
@@ -56,7 +60,7 @@ module Iamport
     # Find payment information using merchant uid
     # https://api.iamport.kr/#!/payments/getPaymentByMerchantUid
     def find(merchant_uid)
-      uri = "payments/find/#{merchant_uid}"
+      uri = "payments/find/#{CGI.escape(merchant_uid)}"
 
       pay_get(uri)
     end
@@ -72,7 +76,7 @@ module Iamport
     # Get prepared payment information by merchant_uid
     # https://api.iamport.kr/#!/payments/prepare/:merchant_uid
     def prepared(merchant_uid)
-      uri = "payments/prepare/#{merchant_uid}"
+      uri = "payments/prepare/#{CGI.escape(merchant_uid)}"
 
       pay_get(uri)
     end
@@ -93,11 +97,6 @@ module Iamport
       pay_post(uri, payload)
     end
 
-    def find_subscribe_customer(customer_uid)
-      warn "[DEPRECATION] `find_subscribe_customer` is deprecated.  Please use `customer_payments` instead."
-      customer_payments(customer_uid)
-    end
-
     # create payment again
     # POST https://api.iamport.kr/#!/subscribe/payments/again
     def create_payment_again(payload = {})
@@ -106,27 +105,112 @@ module Iamport
       pay_post(uri, payload)
     end
 
+    # (un)schedule payments
+    # POST https://api.iamport.kr/#!/subscribe/schedule
+    %i(schedule unschedule).each do |method_name|
+      define_method("#{method_name}_payments") do |payload|
+        uri = "/subscribe/payments/#{method_name}"
+
+        pay_post(uri, payload)
+      end
+    end
+
+    def schedule_merchant_uid(merchant_uid)
+      uri = "/subscribe/payments/schedule/#{CGI.escape(merchant_uid)}"
+
+      pay_get(uri)
+    end
+
+    def schedule_customer_uid(customer_uid:, from:, to:, page:nil, schedule_status: nil)
+      uri = "/subscribe/payments/schedule/#{CGI.escape(customer_uid)}?"
+
+      uri += "?from=#{from.to_i}"
+      uri += "&to=#{to.to_i}"
+
+      uri += "&page=#{to}" if page
+      uri += "&page=#{schedule_status}" if schedule_status
+
+      pay_get(uri)
+    end
+
     # Create and Delete a billing key by customer_uid
     # DELETE https://api.iamport.kr/#!/subscribe/customers/:customer_uid
     # GET https://api.iamport.kr/#!/subscribe/customers/:customer_uid
     { customer: :get, delete_customer: :delete }.each do |method_name, type|
       define_method(method_name) do |customer_uid|
-        uri = "subscribe/customers/#{customer_uid}"
+        uri = "subscribe/customers/#{CGI.escape(customer_uid)}"
 
         send("pay_#{type}", uri)
       end
     end
 
     def create_customer(customer_uid, payload = {})
-      uri = "subscribe/customers/#{customer_uid}"
+      uri = "subscribe/customers/#{CGI.escape(customer_uid)}"
 
       pay_post(uri, payload)
     end
 
     def customer_payments(customer_uid)
-      uri = "subscribe/customers/#{customer_uid}/payments"
+      uri = "subscribe/customers/#{CGI.escape(customer_uid)}/payments"
 
       pay_get(uri)
+    end
+
+    def create_vbank(body)
+      uri = "/vbanks"
+
+      pay_post(uri, body)
+    end
+
+    def delete_vbank(imp_uid)
+      uri = "vbanks/#{imp_uid}"
+
+      pay_delete(uri)
+    end
+
+    def check_holder(options = {})
+      bank_code = options[:bank_code]
+      bank_num = options[:bank_num]
+
+      uri = "vbanks/holder?bank_code=#{bank_code}&bank_num=#{bank_num}"
+
+      pay_get(uri)
+    end
+
+    def get_receipt(imp_uid)
+      uri = "receipts/#{imp_uid}"
+
+      pay_get(uri)
+    end
+
+    def create_receipt(imp_uid, body)
+      uri = "receipts/#{imp_uid}"
+
+      pay_post(uri, body)
+    end
+
+    def delete_receipt(imp_uid)
+      uri = "receipts/#{imp_uid}"
+
+      pay_delete(uri)
+    end
+
+    def delete_external_receipt(merchant_uid)
+      uri = "receipts/#{CGI.escape(merchant_uid)}"
+
+      pay_delete(uri)
+    end
+    
+    def get_certificate(imp_uid)
+      uri = "certifications/#{imp_uid}"
+
+      pay_get(uri)
+    end
+
+    def delete_certificate(imp_uid)
+      uri = "certifications/#{imp_uid}"
+
+      pay_delete(uri)
     end
 
     private
@@ -145,7 +229,7 @@ module Iamport
     # POST
     def pay_post(uri, payload = {})
       url = "#{IAMPORT_HOST}/#{uri}"
-      HTTParty.post(url, headers: headers, body: payload)
+      HTTParty.post(url, headers: headers.merge('Content-Type' => 'application/json'), body: payload.to_json)
     end
 
     # DELETE
